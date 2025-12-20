@@ -16,7 +16,8 @@ import { getFolderNoteCount } from '../lib/notesSelectors';
 import { ALL_NOTES_FOLDER_ID } from '../types/folder';
 
 export function FolderList() {
-  const { folders, notes, activeFolderId, setActiveFolder, createFolder, deleteFolder } = useNotesStore();
+  const { folders, notes, activeFolderId, selectFolder, createFolder, deleteFolder } =
+    useNotesStore();
   const [newFolderName, setNewFolderName] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -87,16 +88,16 @@ export function FolderList() {
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                 )}
-                onClick={() => setActiveFolder(folder.id)}
+                onClick={() => selectFolder(folder.id)}
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <Folder className="h-4 w-4 flex-shrink-0" />
                   <span className="truncate text-sm font-medium">{folder.name}</span>
                 </div>
-                
+
                 <div className="flex items-center gap-1">
                   <span className="text-xs opacity-60">{noteCount}</span>
-                  
+
                   {!isAllNotes && (
                     <button
                       onClick={(e) => {
@@ -108,11 +109,10 @@ export function FolderList() {
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   )}
-                  
-                  <ChevronRight className={cn(
-                    'h-4 w-4 transition-transform',
-                    isActive && 'rotate-90'
-                  )} />
+
+                  <ChevronRight
+                    className={cn('h-4 w-4 transition-transform', isActive && 'rotate-90')}
+                  />
                 </div>
               </div>
             );

@@ -8,7 +8,6 @@ import {
   Highlighter,
   Code,
   Link,
-  MessageSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -27,18 +26,16 @@ const formatActions: FormatAction[] = [
   { icon: Highlighter, label: 'Highlight', shortcut: '⌘⇧H', action: 'highlight' },
   { icon: Code, label: 'Code', shortcut: '⌘E', action: 'code' },
   { icon: Link, label: 'Link', shortcut: '⌘K', action: 'link' },
-  { icon: MessageSquare, label: 'Comment', action: 'comment' },
 ];
 
 interface FloatingFormatBarProps {
   containerRef: React.RefObject<HTMLElement>;
-  onFormat: (action: string, selection: { start: number; end: number; text: string }) => void;
+  onFormat: (action: string) => void;
 }
 
 export function FloatingFormatBar({ containerRef, onFormat }: FloatingFormatBarProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
-  const [selection, setSelection] = useState<{ start: number; end: number; text: string } | null>(null);
   const barRef = useRef<HTMLDivElement>(null);
 
   const updatePosition = useCallback(() => {
@@ -50,31 +47,24 @@ export function FloatingFormatBar({ containerRef, onFormat }: FloatingFormatBarP
 
     const range = sel.getRangeAt(0);
     const container = containerRef.current;
-    
+
     if (!container || !container.contains(range.commonAncestorContainer)) {
       setIsVisible(false);
       return;
     }
 
     const rect = range.getBoundingClientRect();
-    const barWidth = 320; // Approximate width of the bar
-    
-    // Position above the selection
+    const barWidth = 280;
+
     const top = rect.top - 48 + window.scrollY;
     const left = Math.max(16, rect.left + (rect.width - barWidth) / 2);
 
     setPosition({ top, left: Math.min(left, window.innerWidth - barWidth - 16) });
-    setSelection({
-      start: 0, // We'll need to calculate this based on the actual textarea
-      end: 0,
-      text: sel.toString(),
-    });
     setIsVisible(true);
   }, [containerRef]);
 
   useEffect(() => {
     const handleSelectionChange = () => {
-      // Debounce the selection change
       requestAnimationFrame(updatePosition);
     };
 
@@ -84,7 +74,7 @@ export function FloatingFormatBar({ containerRef, onFormat }: FloatingFormatBarP
 
     document.addEventListener('selectionchange', handleSelectionChange);
     document.addEventListener('mouseup', handleMouseUp);
-    
+
     return () => {
       document.removeEventListener('selectionchange', handleSelectionChange);
       document.removeEventListener('mouseup', handleMouseUp);
@@ -92,9 +82,7 @@ export function FloatingFormatBar({ containerRef, onFormat }: FloatingFormatBarP
   }, [updatePosition]);
 
   const handleFormat = (action: string) => {
-    if (selection) {
-      onFormat(action, selection);
-    }
+    onFormat(action);
   };
 
   if (!isVisible) return null;
@@ -112,25 +100,12 @@ export function FloatingFormatBar({ containerRef, onFormat }: FloatingFormatBarP
         <button
           key={action.action}
           onClick={() => handleFormat(action.action)}
-          className={cn(
-            'format-btn',
-            index === 3 && 'ml-1' // Add gap after first group
-          )}
+          className={cn('format-btn', index === 3 && 'ml-1')}
           title={`${action.label}${action.shortcut ? ` (${action.shortcut})` : ''}`}
         >
           <action.icon className="h-4 w-4" />
         </button>
       ))}
-      
-      <div className="format-divider" />
-      
-      <button
-        onClick={() => handleFormat('ai-rewrite')}
-        className="format-btn text-primary hover:bg-primary/10"
-        title="Rewrite with AI"
-      >
-        <span className="text-xs font-medium">AI</span>
-      </button>
     </div>,
     document.body
   );

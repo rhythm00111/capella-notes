@@ -12,9 +12,9 @@ import { useNotesStore } from '../store/useNotesStore';
 import { getFolderNoteCount } from '../lib/notesSelectors';
 
 export function NotesTopBar() {
-  const { folders, notes, activeFolderId, searchQuery, setActiveFolder, setSearchQuery, createNote } = useNotesStore();
-  
-  const activeFolder = folders.find(f => f.id === activeFolderId);
+  const { folders, notes, activeFolderId, searchQuery, selectFolder, setSearchQuery, createNote } =
+    useNotesStore();
+
   const noteCount = getFolderNoteCount(notes, activeFolderId);
 
   return (
@@ -27,7 +27,7 @@ export function NotesTopBar() {
             {noteCount} {noteCount === 1 ? 'note' : 'notes'}
           </p>
         </div>
-        
+
         <Button onClick={() => createNote()} className="btn-premium gap-2">
           <Plus className="h-4 w-4" />
           New Note
@@ -37,7 +37,7 @@ export function NotesTopBar() {
       {/* Controls Row */}
       <div className="flex items-center gap-3">
         {/* Folder Selector */}
-        <Select value={activeFolderId} onValueChange={setActiveFolder}>
+        <Select value={activeFolderId} onValueChange={selectFolder}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select folder" />
           </SelectTrigger>
