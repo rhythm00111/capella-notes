@@ -9,74 +9,74 @@
 
 @layer base {
   :root {
-    /* Core backgrounds - warm, paper-like tones */
-    --background: 40 20% 98%;
-    --foreground: 220 20% 14%;
+    /* Core backgrounds - black theme */
+    --background: 0 0% 0%;
+    --foreground: 0 0% 95%;
     
     /* Card surfaces */
-    --card: 0 0% 100%;
-    --card-foreground: 220 20% 14%;
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 95%;
     
     /* Popover/Dropdown */
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 14%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 95%;
     
     /* Primary - subtle blue */
     --primary: 220 70% 50%;
     --primary-foreground: 0 0% 100%;
     
-    /* Secondary - warm gray */
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 14% 30%;
+    /* Secondary - dark gray */
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 80%;
     
     /* Muted - for less emphasis */
-    --muted: 220 14% 94%;
-    --muted-foreground: 220 10% 50%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 55%;
     
     /* Accent - soft highlight */
-    --accent: 220 60% 96%;
-    --accent-foreground: 220 60% 40%;
+    --accent: 220 30% 12%;
+    --accent-foreground: 220 60% 70%;
     
     /* Destructive */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     
-    /* Borders - very subtle */
-    --border: 220 14% 90%;
-    --input: 220 14% 90%;
+    /* Borders - subtle on black */
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
     --ring: 220 70% 50%;
     
     --radius: 0.625rem;
     
-    /* Sidebar - slightly cooler */
-    --sidebar-background: 220 20% 97%;
-    --sidebar-foreground: 220 14% 30%;
-    --sidebar-primary: 220 70% 50%;
+    /* Sidebar - dark */
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 0 0% 80%;
+    --sidebar-primary: 220 70% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 60% 96%;
-    --sidebar-accent-foreground: 220 60% 40%;
-    --sidebar-border: 220 14% 92%;
-    --sidebar-ring: 220 70% 50%;
+    --sidebar-accent: 220 30% 12%;
+    --sidebar-accent-foreground: 220 60% 70%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 220 70% 55%;
     
     /* Custom Capella tokens */
-    --note-card: 0 0% 100%;
-    --note-card-hover: 220 60% 99%;
-    --note-card-border: 220 14% 92%;
-    --note-card-shadow: 220 40% 20%;
+    --note-card: 0 0% 8%;
+    --note-card-hover: 0 0% 12%;
+    --note-card-border: 0 0% 18%;
+    --note-card-shadow: 0 0% 0%;
     
-    --editor-bg: 40 20% 99%;
-    --editor-line: 220 14% 94%;
+    --editor-bg: 0 0% 4%;
+    --editor-line: 0 0% 15%;
     
-    --tag-default: 220 14% 94%;
-    --tag-blue: 220 90% 95%;
-    --tag-green: 142 60% 94%;
-    --tag-amber: 45 90% 94%;
-    --tag-rose: 350 80% 95%;
-    --tag-purple: 280 60% 95%;
+    --tag-default: 0 0% 18%;
+    --tag-blue: 220 50% 18%;
+    --tag-green: 142 40% 16%;
+    --tag-amber: 45 50% 16%;
+    --tag-rose: 350 40% 16%;
+    --tag-purple: 280 40% 16%;
     
-    --ai-panel-bg: 220 30% 98%;
-    --ai-suggestion: 220 80% 97%;
-    --ai-accent: 220 70% 50%;
+    --ai-panel-bg: 0 0% 5%;
+    --ai-suggestion: 220 40% 12%;
+    --ai-accent: 220 70% 55%;
     
     --success: 142 72% 42%;
     --warning: 38 92% 50%;
