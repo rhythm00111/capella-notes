@@ -1,22 +1,46 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { SlashCommandMenu, SlashCommand } from './SlashCommandMenu';
 import { FloatingFormatBar } from './FloatingFormatBar';
+import { NoteLinkMenu } from './NoteLinkMenu';
+import { Note } from '../../types/note';
 
 interface EditorContentProps {
   title: string;
   content: string;
   onTitleChange: (title: string) => void;
   onContentChange: (content: string) => void;
+  allNotes: Note[];
+  currentNoteId: string;
+  onCreateLinkedNote: (title: string) => string; // Returns new note ID
 }
 
-export function EditorContent({
+export interface EditorContentRef {
+  navigateToLine: (lineIndex: number) => void;
+}
+
+export const EditorContent = forwardRef<EditorContentRef, EditorContentProps>(({
   title,
   content,
   onTitleChange,
   onContentChange,
-}: EditorContentProps) {
+  allNotes,
+  currentNoteId,
+  onCreateLinkedNote,
+}, ref) => {
   const [localContent, setLocalContent] = useState(content);
   const [slashMenu, setSlashMenu] = useState<{
+    isOpen: boolean;
+    position: { top: number; left: number };
+    query: string;
+    startIndex: number;
+  }>({
+    isOpen: false,
+    position: { top: 0, left: 0 },
+    query: '',
+    startIndex: 0,
+  });
+
+  const [linkMenu, setLinkMenu] = useState<{
     isOpen: boolean;
     position: { top: number; left: number };
     query: string;
@@ -32,6 +56,28 @@ export function EditorContent({
   const titleRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Expose methods to parent
+  useImperativeHandle(ref, () => ({
+    navigateToLine: (lineIndex: number) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      const lines = localContent.split('\n');
+      let charIndex = 0;
+      
+      for (let i = 0; i < lineIndex && i < lines.length; i++) {
+        charIndex += lines[i].length + 1; // +1 for newline
+      }
+
+      textarea.focus();
+      textarea.setSelectionRange(charIndex, charIndex);
+      
+      // Scroll to the line
+      const lineHeight = 28; // Approximate line height
+      textarea.scrollTop = lineIndex * lineHeight - textarea.clientHeight / 2;
+    },
+  }));
+
   // Sync local content with prop
   useEffect(() => {
     setLocalContent(content);
@@ -45,7 +91,7 @@ export function EditorContent({
     }
   }, [localContent]);
 
-  // Handle content change with slash command detection
+  // Handle content change with slash command and [[link]] detection
   const handleContentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     const cursorPos = e.target.selectionStart;
@@ -53,8 +99,35 @@ export function EditorContent({
     setLocalContent(value);
     onContentChange(value);
 
-    // Detect slash command
     const textBeforeCursor = value.substring(0, cursorPos);
+
+    // Detect [[ link trigger
+    const lastDoubleBracket = textBeforeCursor.lastIndexOf('[[');
+    const lastClosingBracket = textBeforeCursor.lastIndexOf(']]');
+    
+    if (lastDoubleBracket !== -1 && lastDoubleBracket > lastClosingBracket) {
+      const textAfterBracket = textBeforeCursor.substring(lastDoubleBracket + 2);
+      
+      // Check if we're still in a valid link context (no newlines)
+      if (!textAfterBracket.includes('\n') && !textAfterBracket.includes(']]')) {
+        const textarea = textareaRef.current;
+        if (textarea) {
+          const { top, left } = getCaretCoordinates(textarea, lastDoubleBracket);
+          setLinkMenu({
+            isOpen: true,
+            position: { top: top + 24, left },
+            query: textAfterBracket,
+            startIndex: lastDoubleBracket,
+          });
+          setSlashMenu(prev => ({ ...prev, isOpen: false }));
+          return;
+        }
+      }
+    }
+    
+    setLinkMenu(prev => ({ ...prev, isOpen: false }));
+
+    // Detect slash command
     const lastSlashIndex = textBeforeCursor.lastIndexOf('/');
     
     if (lastSlashIndex !== -1) {
@@ -62,7 +135,6 @@ export function EditorContent({
       
       // Check if we're still in a valid slash command context
       if (!textAfterSlash.includes(' ') && !textAfterSlash.includes('\n')) {
-        // Get caret position for menu placement
         const textarea = textareaRef.current;
         if (textarea) {
           const { top, left } = getCaretCoordinates(textarea, lastSlashIndex);
@@ -80,6 +152,55 @@ export function EditorContent({
       setSlashMenu(prev => ({ ...prev, isOpen: false }));
     }
   }, [onContentChange]);
+
+  // Handle note link selection
+  const handleLinkSelect = useCallback((note: Note) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const cursorPos = textarea.selectionStart;
+    const beforeLink = localContent.substring(0, linkMenu.startIndex);
+    const afterCursor = localContent.substring(cursorPos);
+
+    const linkText = `[[${note.title}]]`;
+    const newContent = beforeLink + linkText + afterCursor;
+    
+    setLocalContent(newContent);
+    onContentChange(newContent);
+    setLinkMenu(prev => ({ ...prev, isOpen: false }));
+
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = beforeLink.length + linkText.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  }, [localContent, linkMenu.startIndex, onContentChange]);
+
+  // Handle creating new note from link
+  const handleLinkCreate = useCallback((newTitle: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const cursorPos = textarea.selectionStart;
+    const beforeLink = localContent.substring(0, linkMenu.startIndex);
+    const afterCursor = localContent.substring(cursorPos);
+
+    // Create the new note
+    onCreateLinkedNote(newTitle);
+
+    const linkText = `[[${newTitle}]]`;
+    const newContent = beforeLink + linkText + afterCursor;
+    
+    setLocalContent(newContent);
+    onContentChange(newContent);
+    setLinkMenu(prev => ({ ...prev, isOpen: false }));
+
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = beforeLink.length + linkText.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  }, [localContent, linkMenu.startIndex, onContentChange, onCreateLinkedNote]);
 
   // Handle slash command selection
   const handleSlashCommand = useCallback((command: SlashCommand) => {
@@ -144,7 +265,6 @@ export function EditorContent({
     onContentChange(newContent);
     setSlashMenu(prev => ({ ...prev, isOpen: false }));
 
-    // Focus and position cursor
     setTimeout(() => {
       textarea.focus();
       const newCursorPos = beforeSlash.length + insertText.length;
@@ -154,10 +274,6 @@ export function EditorContent({
 
   // Handle format action from floating bar
   const handleFormat = useCallback((action: string, selection: { start: number; end: number; text: string }) => {
-    // For now, log the action - in a full implementation, this would apply markdown formatting
-    console.log('Format action:', action, selection);
-    
-    // Example implementation for bold
     const textarea = textareaRef.current;
     if (!textarea) return;
 
@@ -240,6 +356,17 @@ export function EditorContent({
           e.preventDefault();
           wrappedText = `\`${selectedText}\``;
           break;
+        case 'k':
+          e.preventDefault();
+          // Open link menu at cursor
+          const { top, left } = getCaretCoordinates(textarea, start);
+          setLinkMenu({
+            isOpen: true,
+            position: { top: top + 24, left },
+            query: selectedText,
+            startIndex: start,
+          });
+          return;
         default:
           return;
       }
@@ -277,7 +404,7 @@ export function EditorContent({
         value={localContent}
         onChange={handleContentChange}
         onKeyDown={handleKeyDown}
-        placeholder="Start writing, or type '/' for commands..."
+        placeholder="Start writing, or type '/' for commands, '[[' to link..."
         className="editor-content"
       />
 
@@ -290,6 +417,18 @@ export function EditorContent({
         onClose={() => setSlashMenu(prev => ({ ...prev, isOpen: false }))}
       />
 
+      {/* Note Link Menu */}
+      <NoteLinkMenu
+        isOpen={linkMenu.isOpen}
+        position={linkMenu.position}
+        searchQuery={linkMenu.query}
+        notes={allNotes}
+        currentNoteId={currentNoteId}
+        onSelect={handleLinkSelect}
+        onCreate={handleLinkCreate}
+        onClose={() => setLinkMenu(prev => ({ ...prev, isOpen: false }))}
+      />
+
       {/* Floating Format Bar */}
       <FloatingFormatBar
         containerRef={containerRef}
@@ -297,7 +436,9 @@ export function EditorContent({
       />
     </div>
   );
-}
+});
+
+EditorContent.displayName = 'EditorContent';
 
 // Helper function to get caret coordinates in textarea
 function getCaretCoordinates(element: HTMLTextAreaElement, position: number): { top: number; left: number } {
