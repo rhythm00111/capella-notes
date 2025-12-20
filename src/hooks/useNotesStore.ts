@@ -404,90 +404,80 @@ export const useNotesStore = create<NotesStore>()((set, get) => ({
     closeGraphView: () => set({ graphViewOpen: false }),
     
     // Sync
-    setSyncState: (state) => set(prev => ({ syncState: { ...prev.syncState, ...state } })),
+    setSyncState: (newState) => set(prev => ({ syncState: { ...prev.syncState, ...newState } })),
     
-    // Initialize
-    initialize: () => {
-      // Set up computed values subscriber
-      const unsubscribe = useNotesStore.subscribe(
-        (state) => [state.notes, state.searchQuery, state.selectedTags, state.filterView, 
-                    state.selectedNotebookId, state.selectedFolderId, state.sortBy, state.selectedNoteId],
-        () => {
-          const state = get();
-          
-          // Filter notes
-          let filtered = state.notes.filter(note => {
-            // Base filter - exclude deleted unless in trash view
-            if (state.filterView === 'trash') {
-              return note.isDeleted;
-            }
-            if (note.isDeleted) return false;
-            
-            // View filter
-            switch (state.filterView) {
-              case 'favorites':
-                if (!note.isFavorite) return false;
-                break;
-              case 'recent':
-                const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-                if (note.updatedAt < oneWeekAgo) return false;
-                break;
-              case 'notebook':
-                if (note.notebookId !== state.selectedNotebookId) return false;
-                break;
-              case 'folder':
-                if (note.folderId !== state.selectedFolderId) return false;
-                break;
-            }
-            
-            // Tag filter
-            if (state.selectedTags.length > 0) {
-              if (!state.selectedTags.some(tag => note.tags.includes(tag))) return false;
-            }
-            
-            // Search filter
-            if (state.searchQuery) {
-              const query = state.searchQuery.toLowerCase();
-              const matchesTitle = note.title.toLowerCase().includes(query);
-              const matchesContent = note.plainText.toLowerCase().includes(query);
-              const matchesTags = note.tags.some(tag => tag.toLowerCase().includes(query));
-              if (!matchesTitle && !matchesContent && !matchesTags) return false;
-            }
-            
-            return true;
-          });
-          
-          // Sort notes
-          filtered.sort((a, b) => {
-            // Pinned notes always first
-            if (a.isPinned && !b.isPinned) return -1;
-            if (!a.isPinned && b.isPinned) return 1;
-            
-            switch (state.sortBy) {
-              case 'title':
-                return a.title.localeCompare(b.title);
-              case 'favorites':
-                if (a.isFavorite && !b.isFavorite) return -1;
-                if (!a.isFavorite && b.isFavorite) return 1;
-                return b.updatedAt.getTime() - a.updatedAt.getTime();
-              case 'created':
-                return b.createdAt.getTime() - a.createdAt.getTime();
-              case 'recent':
-              default:
-                return b.updatedAt.getTime() - a.updatedAt.getTime();
-            }
-          });
-          
-          // Find selected note
-          const selectedNote = state.notes.find(n => n.id === state.selectedNoteId) || null;
-          
-          set({ filteredNotes: filtered, selectedNote });
-        },
-        { fireImmediately: true }
-      );
-    },
-  }))
-);
+    // Initialize - no-op, we use getFilteredNotes selector instead
+    initialize: () => {},
+  }));
 
-// Initialize store on import
-useNotesStore.getState().initialize();
+// Selector for filtered notes (computed on each call, not stored)
+export const getFilteredNotes = (state: NotesStore): Note[] => {
+  let filtered = state.notes.filter(note => {
+    // Base filter - exclude deleted unless in trash view
+    if (state.filterView === 'trash') {
+      return note.isDeleted;
+    }
+    if (note.isDeleted) return false;
+    
+    // View filter
+    switch (state.filterView) {
+      case 'favorites':
+        if (!note.isFavorite) return false;
+        break;
+      case 'recent':
+        const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        if (note.updatedAt < oneWeekAgo) return false;
+        break;
+      case 'notebook':
+        if (note.notebookId !== state.selectedNotebookId) return false;
+        break;
+      case 'folder':
+        if (note.folderId !== state.selectedFolderId) return false;
+        break;
+    }
+    
+    // Tag filter
+    if (state.selectedTags.length > 0) {
+      if (!state.selectedTags.some(tag => note.tags.includes(tag))) return false;
+    }
+    
+    // Search filter
+    if (state.searchQuery) {
+      const query = state.searchQuery.toLowerCase();
+      const matchesTitle = note.title.toLowerCase().includes(query);
+      const matchesContent = note.plainText.toLowerCase().includes(query);
+      const matchesTags = note.tags.some(tag => tag.toLowerCase().includes(query));
+      if (!matchesTitle && !matchesContent && !matchesTags) return false;
+    }
+    
+    return true;
+  });
+  
+  // Sort notes
+  filtered.sort((a, b) => {
+    // Pinned notes always first
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    
+    switch (state.sortBy) {
+      case 'title':
+        return a.title.localeCompare(b.title);
+      case 'favorites':
+        if (a.isFavorite && !b.isFavorite) return -1;
+        if (!a.isFavorite && b.isFavorite) return 1;
+        return b.updatedAt.getTime() - a.updatedAt.getTime();
+      case 'created':
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      case 'recent':
+      default:
+        return b.updatedAt.getTime() - a.updatedAt.getTime();
+    }
+  });
+  
+  return filtered;
+};
+
+// Selector for selected note
+export const getSelectedNote = (state: NotesStore): Note | null => {
+  return state.notes.find(n => n.id === state.selectedNoteId) || null;
+};

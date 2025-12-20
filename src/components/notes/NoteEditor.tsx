@@ -14,7 +14,7 @@ import {
   Link2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useNotesStore } from '@/hooks/useNotesStore';
+import { useNotesStore, getSelectedNote } from '@/hooks/useNotesStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -226,8 +226,8 @@ function TagInput({ tags, onAdd, onRemove }: {
 }
 
 export function NoteEditor() {
+  const store = useNotesStore();
   const {
-    selectedNote,
     aiPanelOpen,
     syncState,
     selectNote,
@@ -239,7 +239,9 @@ export function NoteEditor() {
     removeTag,
     deleteNote,
     toggleAIPanel,
-  } = useNotesStore();
+  } = store;
+  
+  const selectedNote = getSelectedNote(store);
 
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
   const [slashMenuOpen, setSlashMenuOpen] = useState(false);
