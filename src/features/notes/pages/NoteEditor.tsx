@@ -9,24 +9,24 @@ import { RightSidebar } from '../components/editor/RightSidebar';
 import { NoteVersion } from '../components/editor/VersionHistoryPanel';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { createId } from '../lib/notesHelpers';
+import { generateId } from '../lib/notesHelpers';
+import { AUTO_SAVE_DELAY } from '../lib/notesConstants';
 
 export function NoteEditor() {
   const { noteId } = useParams<{ noteId: string }>();
   const navigate = useNavigate();
-  const { notes, updateNote, deleteNote, setActiveNote, createNote } = useNotesStore();
-  
+  const { notes, updateNote, deleteNote, selectNote, createNote } = useNotesStore();
+
   const note = getNoteById(notes, noteId || null);
-  
+
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
   const [versions, setVersions] = useState<NoteVersion[]>([]);
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const versionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const versionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const editorRef = useRef<EditorContentRef>(null);
 
   // Sync local state with note data
@@ -40,24 +40,24 @@ export function NoteEditor() {
   // Clear active note on unmount
   useEffect(() => {
     return () => {
-      setActiveNote(null);
+      selectNote(null);
     };
-  }, [setActiveNote]);
+  }, [selectNote]);
 
   // Auto-save with debounce
   const handleSave = (updates: { title?: string; content?: string }) => {
     if (!noteId) return;
-    
+
     setIsSaving(true);
-    
+
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
-    
+
     saveTimeoutRef.current = setTimeout(() => {
       updateNote(noteId, updates);
       setIsSaving(false);
-    }, 500);
+    }, AUTO_SAVE_DELAY / 4); // Quick save for responsiveness
   };
 
   const handleTitleChange = (value: string) => {
@@ -77,10 +77,19 @@ export function NoteEditor() {
     }
   };
 
-  const handleCreateLinkedNote = useCallback((newTitle: string): string => {
-    const newNote = createNote(newTitle);
-    return newNote.id;
-  }, [createNote]);
+  const handleTogglePinned = () => {
+    if (noteId && note) {
+      updateNote(noteId, { isPinned: !note.isPinned });
+    }
+  };
+
+  const handleCreateLinkedNote = useCallback(
+    (newTitle: string): string => {
+      const newNote = createNote(undefined, newTitle);
+      return newNote.id;
+    },
+    [createNote]
+  );
 
   const handleNavigateToLine = useCallback((lineIndex: number) => {
     editorRef.current?.navigateToLine(lineIndex);
@@ -100,36 +109,39 @@ export function NoteEditor() {
     );
   }
 
-  const wordCount = content.split(/\s+/).filter(w => w).length;
+  const wordCount = content.split(/\s+/).filter((w) => w).length;
 
   // Create version snapshot
-  const createVersionSnapshot = useCallback((trigger: NoteVersion['trigger']) => {
-    if (!noteId || !content) return;
-    
-    const newVersion: NoteVersion = {
-      id: createId(),
-      timestamp: new Date(),
-      title,
-      content,
-      wordCount,
-      trigger,
-    };
-    
-    setVersions(prev => [newVersion, ...prev].slice(0, 50)); // Keep last 50 versions
-  }, [noteId, title, content, wordCount]);
+  const createVersionSnapshot = useCallback(
+    (trigger: NoteVersion['trigger']) => {
+      if (!noteId || !content) return;
+
+      const newVersion: NoteVersion = {
+        id: generateId(),
+        timestamp: new Date(),
+        title,
+        content,
+        wordCount,
+        trigger,
+      };
+
+      setVersions((prev) => [newVersion, ...prev].slice(0, 50));
+    },
+    [noteId, title, content, wordCount]
+  );
 
   // Auto-create version every 5 minutes
   useEffect(() => {
     if (versionTimeoutRef.current) {
       clearTimeout(versionTimeoutRef.current);
     }
-    
+
     versionTimeoutRef.current = setTimeout(() => {
       if (content.trim()) {
         createVersionSnapshot('auto');
       }
-    }, 5 * 60 * 1000); // 5 minutes
-    
+    }, 5 * 60 * 1000);
+
     return () => {
       if (versionTimeoutRef.current) {
         clearTimeout(versionTimeoutRef.current);
@@ -137,21 +149,31 @@ export function NoteEditor() {
     };
   }, [content, createVersionSnapshot]);
 
-  const handleRestoreVersion = useCallback((version: NoteVersion) => {
-    setTitle(version.title);
-    setContent(version.content);
-    if (noteId) {
-      updateNote(noteId, { title: version.title, content: version.content });
-    }
-  }, [noteId, updateNote]);
+  const handleRestoreVersion = useCallback(
+    (version: NoteVersion) => {
+      setTitle(version.title);
+      setContent(version.content);
+      if (noteId) {
+        updateNote(noteId, { title: version.title, content: version.content });
+      }
+    },
+    [noteId, updateNote]
+  );
 
-  const handleAIContentUpdate = useCallback((newContent: string) => {
-    createVersionSnapshot('ai');
-    setContent(newContent);
-    if (noteId) {
-      updateNote(noteId, { content: newContent });
-    }
-  }, [noteId, updateNote, createVersionSnapshot]);
+  const handleContentUpdate = useCallback(
+    (newContent: string) => {
+      createVersionSnapshot('manual');
+      setContent(newContent);
+      if (noteId) {
+        updateNote(noteId, { content: newContent });
+      }
+    },
+    [noteId, updateNote, createVersionSnapshot]
+  );
+
+  // Parse ISO strings to Date for display
+  const createdAtDate = note.createdAt ? new Date(note.createdAt) : undefined;
+  const updatedAtDate = note.updatedAt ? new Date(note.updatedAt) : undefined;
 
   return (
     <div className="flex h-screen w-full flex-col bg-background">
@@ -160,8 +182,8 @@ export function NoteEditor() {
         onTitleChange={handleTitleChange}
         onDelete={handleDelete}
         isSaving={isSaving}
-        isFavorite={isFavorite}
-        onToggleFavorite={() => setIsFavorite(!isFavorite)}
+        isFavorite={note.isPinned}
+        onToggleFavorite={handleTogglePinned}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -172,16 +194,16 @@ export function NoteEditor() {
           content={content}
           currentNoteId={noteId || ''}
           currentNoteTitle={title}
-          allNotes={notes}
+          allNotes={notes.filter((n) => !n.isDeleted)}
           onNavigateToLine={handleNavigateToLine}
         />
 
         {/* Main Editor */}
-        <main 
+        <main
           className={cn(
-            "flex-1 overflow-auto custom-scrollbar transition-all duration-250",
-            leftSidebarOpen && "ml-60",
-            rightSidebarOpen && "mr-72"
+            'flex-1 overflow-auto custom-scrollbar transition-all duration-250',
+            leftSidebarOpen && 'ml-60',
+            rightSidebarOpen && 'mr-72'
           )}
         >
           <EditorContent
@@ -190,7 +212,7 @@ export function NoteEditor() {
             content={content}
             onTitleChange={handleTitleChange}
             onContentChange={handleContentChange}
-            allNotes={notes}
+            allNotes={notes.filter((n) => !n.isDeleted)}
             currentNoteId={noteId || ''}
             onCreateLinkedNote={handleCreateLinkedNote}
           />
@@ -202,11 +224,11 @@ export function NoteEditor() {
           onToggle={() => setRightSidebarOpen(!rightSidebarOpen)}
           content={content}
           title={title}
-          onUpdateContent={handleAIContentUpdate}
+          onUpdateContent={handleContentUpdate}
           versions={versions}
           onRestoreVersion={handleRestoreVersion}
-          createdAt={note.createdAt}
-          updatedAt={note.updatedAt}
+          createdAt={createdAtDate}
+          updatedAt={updatedAtDate}
           wordCount={wordCount}
         />
       </div>

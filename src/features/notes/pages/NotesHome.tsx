@@ -22,7 +22,7 @@ export function NotesHome() {
       <div className="w-[240px] flex-shrink-0 h-full border-r border-border bg-sidebar">
         <FolderList />
       </div>
-      
+
       {/* Main Content - Notes List */}
       <div className="flex-1 flex flex-col min-w-0 h-full">
         <NotesTopBar />

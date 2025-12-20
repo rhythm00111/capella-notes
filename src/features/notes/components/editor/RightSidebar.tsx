@@ -1,14 +1,7 @@
 import { useState } from 'react';
-import { 
-  PanelRightClose, 
-  PanelRight,
-  Sparkles,
-  Clock,
-  Info
-} from 'lucide-react';
+import { PanelRightClose, PanelRight, Clock, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AIAssistantPanel } from './AIAssistantPanel';
 import { VersionHistoryPanel, NoteVersion } from './VersionHistoryPanel';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -38,7 +31,7 @@ export function RightSidebar({
   updatedAt,
   wordCount,
 }: RightSidebarProps) {
-  const [activeTab, setActiveTab] = useState('ai');
+  const [activeTab, setActiveTab] = useState('history');
 
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
@@ -54,24 +47,6 @@ export function RightSidebar({
         >
           <PanelRight className="h-5 w-5" />
         </Button>
-      )}
-
-      {/* AI Floating Button */}
-      {!isOpen && (
-        <button
-          onClick={onToggle}
-          className={cn(
-            'fixed right-6 bottom-6 z-50',
-            'w-14 h-14 rounded-full',
-            'bg-gradient-to-br from-primary to-primary/80',
-            'shadow-lg shadow-primary/30',
-            'flex items-center justify-center',
-            'hover:scale-105 transition-transform duration-200',
-            'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background'
-          )}
-        >
-          <Sparkles className="h-6 w-6 text-primary-foreground" />
-        </button>
       )}
 
       {/* Sidebar */}
@@ -99,22 +74,15 @@ export function RightSidebar({
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
           <TabsList className="w-full justify-start gap-0 h-10 bg-transparent border-b border-border rounded-none px-2">
-            <TabsTrigger 
-              value="ai" 
-              className="flex-1 gap-1.5 data-[state=active]:bg-muted rounded-md text-xs"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              AI
-            </TabsTrigger>
-            <TabsTrigger 
-              value="history" 
+            <TabsTrigger
+              value="history"
               className="flex-1 gap-1.5 data-[state=active]:bg-muted rounded-md text-xs"
             >
               <Clock className="h-3.5 w-3.5" />
               History
             </TabsTrigger>
-            <TabsTrigger 
-              value="info" 
+            <TabsTrigger
+              value="info"
               className="flex-1 gap-1.5 data-[state=active]:bg-muted rounded-md text-xs"
             >
               <Info className="h-3.5 w-3.5" />
@@ -122,14 +90,10 @@ export function RightSidebar({
             </TabsTrigger>
           </TabsList>
 
-          <div className="overflow-y-auto custom-scrollbar" style={{ height: 'calc(100% - 88px)' }}>
-            <TabsContent value="ai" className="mt-0">
-              <AIAssistantPanel
-                content={content}
-                onUpdateContent={onUpdateContent}
-              />
-            </TabsContent>
-
+          <div
+            className="overflow-y-auto custom-scrollbar"
+            style={{ height: 'calc(100% - 88px)' }}
+          >
             <TabsContent value="history" className="mt-0">
               <VersionHistoryPanel
                 versions={versions}
@@ -159,7 +123,7 @@ export function RightSidebar({
                     <span className="text-muted-foreground">Characters</span>
                     <span className="font-medium">{content.length.toLocaleString()}</span>
                   </div>
-                  
+
                   <div className="border-t border-border pt-3 mt-3">
                     {createdAt && (
                       <div className="flex justify-between text-sm mb-2">

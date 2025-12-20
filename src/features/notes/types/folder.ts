@@ -3,8 +3,10 @@
 export interface Folder {
   id: string;
   name: string;
-  createdAt: Date;
-  updatedAt: Date;
+  color: string;
+  icon: string;
+  createdAt: string;
+  order: number;
 }
 
 // Default folder ID constant
@@ -14,6 +16,8 @@ export const ALL_NOTES_FOLDER_ID = 'all-notes';
 export const ALL_NOTES_FOLDER: Folder = {
   id: ALL_NOTES_FOLDER_ID,
   name: 'All Notes',
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  color: '#10B981',
+  icon: '📁',
+  createdAt: new Date().toISOString(),
+  order: 0,
 };

@@ -1,126 +1,194 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { Note } from '../types/note';
 import { Folder, ALL_NOTES_FOLDER_ID, ALL_NOTES_FOLDER } from '../types/folder';
 import { initialNotes, initialFolders } from '../data/initialNotes';
-import { createId } from '../lib/notesHelpers';
+import { generateId } from '../lib/notesHelpers';
+import { STORAGE_KEY, DEFAULT_FOLDER_COLOR } from '../lib/notesConstants';
 
-interface NotesStore {
-  // Data
+// State shape
+interface NotesState {
+  // Raw data
   notes: Note[];
   folders: Folder[];
-  
-  // UI State
+
+  // Selection state
   activeFolderId: string;
   activeNoteId: string | null;
+
+  // UI state
   searchQuery: string;
-  
-  // Actions - Folders
-  createFolder: (name: string) => Folder;
-  deleteFolder: (id: string) => void;
-  
-  // Actions - Notes
-  createNote: (title?: string) => Note;
-  updateNote: (id: string, updates: Partial<Pick<Note, 'title' | 'content'>>) => void;
-  deleteNote: (id: string) => void;
-  
-  // Actions - Navigation
-  setActiveFolder: (id: string) => void;
-  setActiveNote: (id: string | null) => void;
-  setSearchQuery: (query: string) => void;
+  isCreatingFolder: boolean;
+  isCreatingNote: boolean;
 }
 
-export const useNotesStore = create<NotesStore>()((set, get) => ({
-  // Initial Data
-  notes: initialNotes,
-  folders: initialFolders,
-  
-  // Initial UI State
-  activeFolderId: ALL_NOTES_FOLDER_ID,
-  activeNoteId: null,
-  searchQuery: '',
-  
-  // Folder Actions
-  createFolder: (name: string) => {
-    const folder: Folder = {
-      id: createId(),
-      name,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    
-    set(state => ({
-      folders: [...state.folders, folder],
-    }));
-    
-    return folder;
-  },
-  
-  deleteFolder: (id: string) => {
-    // Cannot delete "All Notes" folder
-    if (id === ALL_NOTES_FOLDER_ID) return;
-    
-    set(state => ({
-      // Remove folder
-      folders: state.folders.filter(f => f.id !== id),
-      // Move notes from deleted folder to "All Notes"
-      notes: state.notes.map(note => 
-        note.folderId === id 
-          ? { ...note, folderId: ALL_NOTES_FOLDER_ID, updatedAt: new Date() }
-          : note
-      ),
-      // Reset active folder if it was deleted
-      activeFolderId: state.activeFolderId === id ? ALL_NOTES_FOLDER_ID : state.activeFolderId,
-    }));
-  },
-  
-  // Note Actions
-  createNote: (title?: string) => {
-    const { activeFolderId } = get();
-    
-    const note: Note = {
-      id: createId(),
-      title: title || 'Untitled',
-      content: '',
-      folderId: activeFolderId === ALL_NOTES_FOLDER_ID ? ALL_NOTES_FOLDER_ID : activeFolderId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    
-    set(state => ({
-      notes: [note, ...state.notes],
-      activeNoteId: note.id,
-    }));
-    
-    return note;
-  },
-  
-  updateNote: (id: string, updates: Partial<Pick<Note, 'title' | 'content'>>) => {
-    set(state => ({
-      notes: state.notes.map(note =>
-        note.id === id
-          ? { ...note, ...updates, updatedAt: new Date() }
-          : note
-      ),
-    }));
-  },
-  
-  deleteNote: (id: string) => {
-    set(state => ({
-      notes: state.notes.filter(note => note.id !== id),
-      activeNoteId: state.activeNoteId === id ? null : state.activeNoteId,
-    }));
-  },
-  
-  // Navigation Actions
-  setActiveFolder: (id: string) => {
-    set({ activeFolderId: id, activeNoteId: null });
-  },
-  
-  setActiveNote: (id: string | null) => {
-    set({ activeNoteId: id });
-  },
-  
-  setSearchQuery: (query: string) => {
-    set({ searchQuery: query });
-  },
-}));
+// Actions
+interface NotesActions {
+  // Folder actions
+  createFolder: (name: string) => void;
+  deleteFolder: (id: string) => void;
+  selectFolder: (id: string) => void;
+
+  // Note actions
+  createNote: (folderId?: string, title?: string) => Note;
+  updateNote: (id: string, updates: Partial<Pick<Note, 'title' | 'content' | 'isPinned'>>) => void;
+  deleteNote: (id: string) => void;
+  selectNote: (id: string | null) => void;
+
+  // UI actions
+  setSearchQuery: (query: string) => void;
+  openCreateFolderDialog: () => void;
+  closeCreateFolderDialog: () => void;
+  openCreateNoteDialog: () => void;
+  closeCreateNoteDialog: () => void;
+
+  // Legacy aliases for compatibility
+  setActiveFolder: (id: string) => void;
+  setActiveNote: (id: string | null) => void;
+}
+
+export const useNotesStore = create<NotesState & NotesActions>()(
+  persist(
+    (set, get) => ({
+      // Initial Data
+      notes: initialNotes,
+      folders: initialFolders,
+
+      // Initial UI State
+      activeFolderId: ALL_NOTES_FOLDER_ID,
+      activeNoteId: null,
+      searchQuery: '',
+      isCreatingFolder: false,
+      isCreatingNote: false,
+
+      // Folder Actions
+      createFolder: (name: string) => {
+        const { folders } = get();
+        const folder: Folder = {
+          id: generateId(),
+          name,
+          color: DEFAULT_FOLDER_COLOR,
+          icon: '📁',
+          createdAt: new Date().toISOString(),
+          order: folders.length,
+        };
+
+        set((state) => ({
+          folders: [...state.folders, folder],
+          isCreatingFolder: false,
+        }));
+      },
+
+      deleteFolder: (id: string) => {
+        // Cannot delete "All Notes" folder
+        if (id === ALL_NOTES_FOLDER_ID) return;
+
+        set((state) => ({
+          // Remove folder
+          folders: state.folders.filter((f) => f.id !== id),
+          // Move notes from deleted folder to "All Notes"
+          notes: state.notes.map((note) =>
+            note.folderId === id
+              ? { ...note, folderId: ALL_NOTES_FOLDER_ID, updatedAt: new Date().toISOString() }
+              : note
+          ),
+          // Reset active folder if it was deleted
+          activeFolderId: state.activeFolderId === id ? ALL_NOTES_FOLDER_ID : state.activeFolderId,
+        }));
+      },
+
+      selectFolder: (id: string) => {
+        set({ activeFolderId: id, activeNoteId: null });
+      },
+
+      // Note Actions
+      createNote: (folderId?: string, title?: string) => {
+        const { activeFolderId } = get();
+        const targetFolderId = folderId || activeFolderId;
+
+        const note: Note = {
+          id: generateId(),
+          title: title || 'Untitled',
+          content: '',
+          folderId: targetFolderId === ALL_NOTES_FOLDER_ID ? ALL_NOTES_FOLDER_ID : targetFolderId,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isDeleted: false,
+          isPinned: false,
+        };
+
+        set((state) => ({
+          notes: [note, ...state.notes],
+          activeNoteId: note.id,
+          isCreatingNote: false,
+        }));
+
+        return note;
+      },
+
+      updateNote: (id: string, updates: Partial<Pick<Note, 'title' | 'content' | 'isPinned'>>) => {
+        set((state) => ({
+          notes: state.notes.map((note) =>
+            note.id === id ? { ...note, ...updates, updatedAt: new Date().toISOString() } : note
+          ),
+        }));
+      },
+
+      deleteNote: (id: string) => {
+        // Soft delete
+        set((state) => ({
+          notes: state.notes.map((note) =>
+            note.id === id
+              ? { ...note, isDeleted: true, updatedAt: new Date().toISOString() }
+              : note
+          ),
+          activeNoteId: state.activeNoteId === id ? null : state.activeNoteId,
+        }));
+      },
+
+      selectNote: (id: string | null) => {
+        set({ activeNoteId: id });
+      },
+
+      // UI Actions
+      setSearchQuery: (query: string) => {
+        set({ searchQuery: query });
+      },
+
+      openCreateFolderDialog: () => {
+        set({ isCreatingFolder: true });
+      },
+
+      closeCreateFolderDialog: () => {
+        set({ isCreatingFolder: false });
+      },
+
+      openCreateNoteDialog: () => {
+        set({ isCreatingNote: true });
+      },
+
+      closeCreateNoteDialog: () => {
+        set({ isCreatingNote: false });
+      },
+
+      // Legacy aliases
+      setActiveFolder: (id: string) => {
+        set({ activeFolderId: id, activeNoteId: null });
+      },
+
+      setActiveNote: (id: string | null) => {
+        set({ activeNoteId: id });
+      },
+    }),
+    {
+      name: STORAGE_KEY,
+      // Only persist data, not UI state
+      partialize: (state) => ({
+        notes: state.notes,
+        folders: state.folders,
+        activeFolderId: state.activeFolderId,
+        activeNoteId: state.activeNoteId,
+      }),
+    }
+  )
+);
