@@ -1,28 +1,28 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Capella Pro - Premium Note-Taking Design System */
-/* Calm, elegant palette with subtle blue accents */
+/* Capella Pro Notes - Premium Note-Taking Design System */
+/* Flagship Editor Theme - Competing with Notion, Obsidian, Evernote */
 
 @layer base {
   :root {
-    /* Core backgrounds - black theme */
-    --background: 0 0% 0%;
+    /* Core backgrounds - pure black theme */
+    --background: 0 0% 4%;
     --foreground: 0 0% 95%;
     
     /* Card surfaces */
-    --card: 0 0% 6%;
+    --card: 0 0% 7%;
     --card-foreground: 0 0% 95%;
     
-    /* Popover/Dropdown */
-    --popover: 0 0% 8%;
+    /* Popover/Dropdown - slightly elevated */
+    --popover: 0 0% 10%;
     --popover-foreground: 0 0% 95%;
     
-    /* Primary - subtle blue */
-    --primary: 220 70% 50%;
+    /* Primary - emerald green (success, save, AI) */
+    --primary: 160 84% 39%;
     --primary-foreground: 0 0% 100%;
     
     /* Secondary - dark gray */
@@ -31,124 +31,70 @@
     
     /* Muted - for less emphasis */
     --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 55%;
+    --muted-foreground: 0 0% 42%;
     
-    /* Accent - soft highlight */
-    --accent: 220 30% 12%;
-    --accent-foreground: 220 60% 70%;
+    /* Accent - blue for links/actions */
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
     
     /* Destructive */
-    --destructive: 0 72% 51%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     
     /* Borders - subtle on black */
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 220 70% 50%;
+    --border: 0 0% 12%;
+    --border-strong: 0 0% 17%;
+    --input: 0 0% 12%;
+    --ring: 160 84% 39%;
     
-    --radius: 0.625rem;
+    --radius: 0.5rem;
     
-    /* Sidebar - dark */
-    --sidebar-background: 0 0% 4%;
-    --sidebar-foreground: 0 0% 80%;
-    --sidebar-primary: 220 70% 55%;
+    /* Sidebar */
+    --sidebar-background: 0 0% 5%;
+    --sidebar-foreground: 0 0% 63%;
+    --sidebar-primary: 160 84% 39%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 30% 12%;
-    --sidebar-accent-foreground: 220 60% 70%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 220 70% 55%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 12%;
+    --sidebar-ring: 160 84% 39%;
     
     /* Custom Capella tokens */
-    --note-card: 0 0% 8%;
-    --note-card-hover: 0 0% 12%;
-    --note-card-border: 0 0% 18%;
+    --note-card: 0 0% 7%;
+    --note-card-hover: 0 0% 10%;
+    --note-card-border: 0 0% 14%;
     --note-card-shadow: 0 0% 0%;
     
     --editor-bg: 0 0% 4%;
-    --editor-line: 0 0% 15%;
+    --editor-surface: 0 0% 6%;
+    --editor-line: 0 0% 12%;
     
-    --tag-default: 0 0% 18%;
-    --tag-blue: 220 50% 18%;
-    --tag-green: 142 40% 16%;
-    --tag-amber: 45 50% 16%;
-    --tag-rose: 350 40% 16%;
-    --tag-purple: 280 40% 16%;
+    /* Tags */
+    --tag-default: 0 0% 15%;
+    --tag-blue: 217 60% 20%;
+    --tag-green: 160 50% 18%;
+    --tag-amber: 38 60% 18%;
+    --tag-rose: 350 50% 18%;
+    --tag-purple: 270 50% 20%;
     
+    /* AI */
     --ai-panel-bg: 0 0% 5%;
-    --ai-suggestion: 220 40% 12%;
-    --ai-accent: 220 70% 55%;
+    --ai-suggestion: 160 30% 12%;
+    --ai-accent: 160 84% 39%;
     
-    --success: 142 72% 42%;
+    /* Semantic colors */
+    --success: 160 84% 39%;
     --warning: 38 92% 50%;
-    --info: 220 70% 50%;
+    --info: 217 91% 60%;
+    --error: 0 84% 60%;
     
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(var(--note-card-shadow) / 0.03);
-    --shadow-md: 0 4px 6px -1px hsl(var(--note-card-shadow) / 0.04), 0 2px 4px -2px hsl(var(--note-card-shadow) / 0.04);
-    --shadow-lg: 0 10px 15px -3px hsl(var(--note-card-shadow) / 0.05), 0 4px 6px -4px hsl(var(--note-card-shadow) / 0.05);
-    --shadow-xl: 0 20px 25px -5px hsl(var(--note-card-shadow) / 0.06), 0 8px 10px -6px hsl(var(--note-card-shadow) / 0.06);
-  }
-
-  .dark {
-    --background: 220 20% 8%;
-    --foreground: 220 10% 94%;
-    
-    --card: 220 18% 10%;
-    --card-foreground: 220 10% 94%;
-    
-    --popover: 220 18% 10%;
-    --popover-foreground: 220 10% 94%;
-    
-    --primary: 220 70% 60%;
-    --primary-foreground: 220 20% 8%;
-    
-    --secondary: 220 14% 16%;
-    --secondary-foreground: 220 10% 80%;
-    
-    --muted: 220 14% 14%;
-    --muted-foreground: 220 10% 55%;
-    
-    --accent: 220 30% 16%;
-    --accent-foreground: 220 60% 70%;
-    
-    --destructive: 0 62% 50%;
-    --destructive-foreground: 0 0% 100%;
-    
-    --border: 220 14% 18%;
-    --input: 220 14% 18%;
-    --ring: 220 70% 60%;
-    
-    --sidebar-background: 220 20% 7%;
-    --sidebar-foreground: 220 10% 80%;
-    --sidebar-primary: 220 70% 60%;
-    --sidebar-primary-foreground: 220 20% 8%;
-    --sidebar-accent: 220 30% 14%;
-    --sidebar-accent-foreground: 220 60% 70%;
-    --sidebar-border: 220 14% 16%;
-    --sidebar-ring: 220 70% 60%;
-    
-    --note-card: 220 18% 11%;
-    --note-card-hover: 220 20% 13%;
-    --note-card-border: 220 14% 18%;
-    --note-card-shadow: 220 40% 5%;
-    
-    --editor-bg: 220 20% 9%;
-    --editor-line: 220 14% 16%;
-    
-    --tag-default: 220 14% 18%;
-    --tag-blue: 220 50% 20%;
-    --tag-green: 142 40% 18%;
-    --tag-amber: 45 50% 18%;
-    --tag-rose: 350 40% 18%;
-    --tag-purple: 280 40% 18%;
-    
-    --ai-panel-bg: 220 25% 10%;
-    --ai-suggestion: 220 40% 14%;
-    --ai-accent: 220 70% 60%;
-    
-    --success: 142 72% 50%;
-    --warning: 38 92% 55%;
-    --info: 220 70% 60%;
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.4);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.5), 0 4px 6px -4px hsl(0 0% 0% / 0.5);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.6), 0 8px 10px -6px hsl(0 0% 0% / 0.6);
+    --shadow-glow: 0 0 20px -5px hsl(var(--primary) / 0.3);
+    --shadow-glow-lg: 0 8px 24px hsl(var(--primary) / 0.25);
   }
 }
 
@@ -169,7 +115,47 @@
 }
 
 @layer components {
-  /* Note card styles */
+  /* ========== TYPOGRAPHY SCALE ========== */
+  .text-title {
+    @apply text-5xl font-bold leading-tight tracking-tight;
+  }
+  
+  .text-subtitle {
+    @apply text-3xl font-semibold leading-snug;
+  }
+  
+  .text-section {
+    @apply text-2xl font-semibold leading-snug;
+  }
+  
+  .text-body-lg {
+    @apply text-lg leading-relaxed;
+  }
+  
+  .text-body {
+    @apply text-base leading-relaxed;
+  }
+  
+  .text-body-sm {
+    @apply text-sm leading-normal;
+  }
+  
+  .text-caption {
+    @apply text-xs font-medium leading-normal;
+  }
+
+  /* ========== TOP BAR ========== */
+  .editor-top-bar {
+    @apply h-16 sticky top-0 z-50 flex items-center justify-between px-4 md:px-8;
+    @apply bg-background/95 backdrop-blur-sm;
+    @apply border-b border-border transition-shadow duration-200;
+  }
+  
+  .editor-top-bar.scrolled {
+    @apply shadow-md;
+  }
+
+  /* ========== NOTE CARDS ========== */
   .note-card {
     @apply rounded-xl transition-all duration-200;
     background-color: hsl(var(--note-card));
@@ -178,16 +164,183 @@
   }
   
   .note-card:hover {
-    @apply border-primary/20;
+    @apply border-primary/30;
     background: hsl(var(--note-card-hover));
     box-shadow: var(--shadow-md);
   }
   
   .note-card.selected {
-    @apply border-primary/40 ring-2 ring-primary/10;
+    @apply border-primary/50 ring-2 ring-primary/20;
+  }
+
+  /* ========== FLOATING FORMAT BAR ========== */
+  .floating-format-bar {
+    @apply flex items-center gap-1 p-1.5 rounded-lg;
+    @apply bg-popover border border-border-strong;
+    @apply shadow-xl;
+    @apply animate-in fade-in-0 zoom-in-95 duration-150;
   }
   
-  /* Tag styles */
+  .format-btn {
+    @apply w-8 h-8 flex items-center justify-center rounded-md;
+    @apply text-muted-foreground hover:text-foreground hover:bg-muted;
+    @apply transition-all duration-150;
+  }
+  
+  .format-btn.active {
+    @apply bg-primary text-primary-foreground;
+  }
+  
+  .format-btn:hover {
+    @apply scale-[1.02];
+  }
+  
+  .format-divider {
+    @apply w-px h-5 bg-border mx-1;
+  }
+
+  /* ========== SLASH COMMAND MENU ========== */
+  .slash-menu {
+    @apply absolute z-50 w-72 py-2 rounded-xl;
+    @apply bg-popover border border-border-strong;
+    @apply shadow-xl;
+    @apply animate-in fade-in-0 slide-in-from-top-2 duration-150;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  .slash-menu-group {
+    @apply px-3 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide;
+  }
+  
+  .slash-menu-item {
+    @apply flex items-center gap-3 px-3 py-2.5 mx-2 rounded-lg cursor-pointer;
+    @apply transition-colors duration-100;
+  }
+  
+  .slash-menu-item:hover,
+  .slash-menu-item.selected {
+    @apply bg-muted;
+  }
+  
+  .slash-menu-item.selected {
+    @apply bg-primary/10 text-primary;
+  }
+  
+  .slash-menu-item-icon {
+    @apply w-8 h-8 flex items-center justify-center rounded-lg bg-muted;
+    @apply text-muted-foreground;
+  }
+  
+  .slash-menu-item.selected .slash-menu-item-icon {
+    @apply bg-primary/20 text-primary;
+  }
+
+  /* ========== EDITOR AREA ========== */
+  .editor-container {
+    @apply max-w-4xl mx-auto px-6 md:px-10 py-12;
+  }
+  
+  .editor-title {
+    @apply w-full text-4xl md:text-5xl font-bold bg-transparent outline-none;
+    @apply placeholder:text-muted-foreground/40;
+    @apply leading-tight tracking-tight;
+  }
+  
+  .editor-content {
+    @apply w-full min-h-[60vh] bg-transparent outline-none resize-none;
+    @apply text-foreground placeholder:text-muted-foreground/40;
+    @apply text-lg leading-loose;
+  }
+
+  /* ========== BLOCK STYLES ========== */
+  .editor-block {
+    @apply relative py-1 rounded-md transition-colors;
+  }
+  
+  .editor-block:hover {
+    @apply bg-muted/30;
+  }
+  
+  .block-handle {
+    @apply absolute -left-10 top-1/2 -translate-y-1/2;
+    @apply w-6 h-6 flex items-center justify-center rounded-md;
+    @apply text-muted-foreground opacity-0 cursor-grab;
+    @apply hover:bg-muted hover:text-foreground;
+    @apply transition-all duration-150;
+  }
+  
+  .editor-block:hover .block-handle {
+    @apply opacity-60;
+  }
+  
+  .block-add-btn {
+    @apply absolute -left-10 top-1/2 -translate-y-1/2;
+    @apply w-6 h-6 flex items-center justify-center rounded-md;
+    @apply text-muted-foreground opacity-0;
+    @apply hover:bg-muted hover:text-foreground;
+    @apply transition-all duration-150;
+  }
+  
+  .editor-block:hover .block-add-btn {
+    @apply opacity-60;
+  }
+
+  /* ========== SIDEBAR PANELS ========== */
+  .editor-sidebar {
+    @apply w-60 flex-shrink-0 border-r border-border;
+    @apply bg-sidebar;
+    @apply transition-all duration-250;
+  }
+  
+  .editor-sidebar.collapsed {
+    @apply w-0 overflow-hidden border-none;
+  }
+  
+  .sidebar-section {
+    @apply p-4 border-b border-border;
+  }
+  
+  .sidebar-section-title {
+    @apply text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3;
+  }
+
+  /* ========== AI BUTTON ========== */
+  .ai-fab {
+    @apply fixed bottom-6 right-6 z-50;
+    @apply w-14 h-14 rounded-full flex items-center justify-center;
+    @apply bg-gradient-to-br from-primary to-emerald-600;
+    @apply text-primary-foreground shadow-glow-lg;
+    @apply hover:scale-105 active:scale-95;
+    @apply transition-all duration-200;
+  }
+
+  /* ========== STATUS INDICATORS ========== */
+  .save-status {
+    @apply flex items-center gap-2 text-xs;
+  }
+  
+  .save-status.saving {
+    @apply text-muted-foreground;
+  }
+  
+  .save-status.saved {
+    @apply text-success;
+  }
+  
+  .save-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+  
+  .save-dot.saving {
+    @apply bg-muted-foreground animate-pulse;
+  }
+  
+  .save-dot.saved {
+    @apply bg-success;
+  }
+
+  /* ========== TAG STYLES ========== */
   .tag {
     @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium transition-colors;
   }
@@ -198,137 +351,48 @@
   }
   .tag-blue { 
     background-color: hsl(var(--tag-blue));
-    @apply text-blue-700 dark:text-blue-300; 
+    @apply text-blue-400; 
   }
   .tag-green { 
     background-color: hsl(var(--tag-green));
-    @apply text-green-700 dark:text-green-300; 
+    @apply text-emerald-400; 
   }
   .tag-amber { 
     background-color: hsl(var(--tag-amber));
-    @apply text-amber-700 dark:text-amber-300; 
+    @apply text-amber-400; 
   }
   .tag-rose { 
     background-color: hsl(var(--tag-rose));
-    @apply text-rose-700 dark:text-rose-300; 
+    @apply text-rose-400; 
   }
   .tag-purple { 
     background-color: hsl(var(--tag-purple));
-    @apply text-purple-700 dark:text-purple-300; 
+    @apply text-purple-400; 
   }
-  
-  /* AI Panel styles */
-  .ai-panel {
-    background-color: hsl(var(--ai-panel-bg));
-    @apply border-l border-border;
-  }
-  
-  .ai-suggestion-card {
-    background-color: hsl(var(--ai-suggestion));
-    @apply p-3 rounded-lg border border-border/50 transition-all duration-200;
-  }
-  
-  .ai-suggestion-card:hover {
-    @apply border-primary/30 shadow-sm;
-  }
-  
-  /* Editor styles */
-  .editor-block {
-    @apply relative py-1 px-1 rounded-md transition-colors;
-  }
-  
-  .editor-block:hover {
-    @apply bg-muted/50;
-  }
-  
-  .editor-block.dragging {
-    @apply opacity-50 bg-primary/10;
-  }
-  
-  .editor-block-handle {
-    @apply absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 opacity-0 transition-opacity cursor-grab;
-  }
-  
-  .editor-block:hover .editor-block-handle {
-    @apply opacity-60;
-  }
-  
-  /* Sidebar item */
-  .sidebar-item {
-    @apply flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150;
-    @apply text-muted-foreground hover:text-foreground hover:bg-muted;
-  }
-  
-  .sidebar-item.active {
-    @apply text-primary bg-primary/10;
-  }
-  
-  /* Search input */
-  .search-input {
-    @apply w-full px-3 py-2 rounded-lg bg-muted/50 border border-transparent text-sm;
-    @apply placeholder:text-muted-foreground/60;
-    @apply focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/10;
-    @apply transition-all duration-200;
-  }
-  
-  /* Premium button */
+
+  /* ========== BUTTONS ========== */
   .btn-premium {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm;
-    @apply bg-primary text-primary-foreground shadow-md;
-    @apply hover:bg-primary/90 hover:shadow-lg;
+    @apply bg-primary text-primary-foreground;
+    @apply hover:bg-primary/90;
     @apply active:scale-[0.98];
+    @apply shadow-md hover:shadow-lg;
     @apply transition-all duration-200;
   }
   
-  /* Ghost button */
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-medium text-sm;
     @apply text-muted-foreground hover:text-foreground hover:bg-muted;
     @apply transition-all duration-150;
   }
   
-  /* Floating toolbar */
-  .floating-toolbar {
-    @apply flex items-center gap-0.5 p-1 rounded-lg bg-popover border shadow-lg;
-    @apply animate-in fade-in-0 zoom-in-95 duration-150;
+  .btn-icon {
+    @apply w-10 h-10 flex items-center justify-center rounded-lg;
+    @apply text-muted-foreground hover:text-foreground hover:bg-muted;
+    @apply transition-all duration-150;
   }
-  
-  /* Slash menu */
-  .slash-menu {
-    @apply absolute z-50 w-64 py-2 rounded-xl bg-popover border shadow-xl;
-    @apply animate-in fade-in-0 slide-in-from-top-2 duration-150;
-  }
-  
-  .slash-menu-item {
-    @apply flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors;
-    @apply hover:bg-muted;
-  }
-  
-  .slash-menu-item.selected {
-    @apply bg-primary/10 text-primary;
-  }
-  
-  /* Waveform animation */
-  @keyframes waveform {
-    0%, 100% { transform: scaleY(0.5); }
-    50% { transform: scaleY(1); }
-  }
-  
-  .waveform-bar {
-    @apply w-1 bg-primary rounded-full;
-    animation: waveform 0.5s ease-in-out infinite;
-  }
-  
-  /* Saving indicator */
-  .saving-indicator {
-    @apply flex items-center gap-1.5 text-xs text-muted-foreground;
-  }
-  
-  .saving-dot {
-    @apply w-1.5 h-1.5 rounded-full bg-primary animate-pulse;
-  }
-  
-  /* Scrollbar styling */
+
+  /* ========== SCROLLBAR ========== */
   .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--border)) transparent;
@@ -351,15 +415,20 @@
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground) / 0.3);
   }
+
+  /* ========== KEYBOARD SHORTCUT HINTS ========== */
+  .kbd {
+    @apply inline-flex items-center justify-center h-5 px-1.5 rounded;
+    @apply bg-muted text-muted-foreground text-xs font-mono;
+    @apply border border-border;
+  }
 }
 
 @layer utilities {
-  /* Text utilities */
   .text-balance {
     text-wrap: balance;
   }
   
-  /* Line clamp */
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -374,17 +443,19 @@
     overflow: hidden;
   }
   
-  /* Focus visible ring */
   .focus-ring {
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
   }
   
-  /* Subtle glow */
   .glow-sm {
     box-shadow: 0 0 20px -5px hsl(var(--primary) / 0.15);
   }
   
   .glow-md {
-    box-shadow: 0 0 30px -5px hsl(var(--primary) / 0.2);
+    box-shadow: 0 0 30px -5px hsl(var(--primary) / 0.25);
+  }
+  
+  .glow-lg {
+    box-shadow: 0 8px 24px hsl(var(--primary) / 0.3);
   }
 }

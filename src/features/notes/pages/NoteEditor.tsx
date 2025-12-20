@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNotesStore } from '../store/useNotesStore';
 import { getNoteById } from '../lib/notesSelectors';
+import { EditorTopBar } from '../components/editor/EditorTopBar';
+import { EditorContent } from '../components/editor/EditorContent';
+import { Button } from '@/components/ui/button';
 
 export function NoteEditor() {
   const { noteId } = useParams<{ noteId: string }>();
@@ -15,8 +15,8 @@ export function NoteEditor() {
   
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const titleRef = useRef<HTMLInputElement>(null);
-  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Sync local state with note data
@@ -38,12 +38,15 @@ export function NoteEditor() {
   const handleSave = (updates: { title?: string; content?: string }) => {
     if (!noteId) return;
     
+    setIsSaving(true);
+    
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
     
     saveTimeoutRef.current = setTimeout(() => {
       updateNote(noteId, updates);
+      setIsSaving(false);
     }, 500);
   };
 
@@ -55,16 +58,6 @@ export function NoteEditor() {
   const handleContentChange = (value: string) => {
     setContent(value);
     handleSave({ content: value });
-  };
-
-  const handleBack = () => {
-    // Force save before navigating
-    if (noteId && saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-      updateNote(noteId, { title, content });
-    }
-    setActiveNote(null);
-    navigate('/notes');
   };
 
   const handleDelete = () => {
@@ -90,56 +83,23 @@ export function NoteEditor() {
 
   return (
     <div className="flex h-screen w-full flex-col bg-background">
-      {/* Top Bar */}
-      <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-border">
-        <Button
-          variant="ghost"
-          onClick={handleBack}
-          className="gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Notes
-        </Button>
-        
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">
-            Auto-saved
-          </span>
-          
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleDelete}
-            className="text-muted-foreground hover:text-destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      <EditorTopBar
+        title={title}
+        onTitleChange={handleTitleChange}
+        onDelete={handleDelete}
+        isSaving={isSaving}
+        isFavorite={isFavorite}
+        onToggleFavorite={() => setIsFavorite(!isFavorite)}
+      />
 
-      {/* Editor Content */}
-      <ScrollArea className="flex-1">
-        <div className="max-w-3xl mx-auto px-6 py-8">
-          {/* Title */}
-          <input
-            ref={titleRef}
-            type="text"
-            value={title}
-            onChange={(e) => handleTitleChange(e.target.value)}
-            placeholder="Untitled"
-            className="w-full text-3xl font-bold bg-transparent outline-none placeholder:text-muted-foreground/40 mb-6"
-          />
-          
-          {/* Content */}
-          <textarea
-            ref={contentRef}
-            value={content}
-            onChange={(e) => handleContentChange(e.target.value)}
-            placeholder="Start writing..."
-            className="w-full min-h-[60vh] bg-transparent outline-none resize-none text-foreground placeholder:text-muted-foreground/40 leading-relaxed"
-          />
-        </div>
-      </ScrollArea>
+      <main className="flex-1 overflow-auto custom-scrollbar">
+        <EditorContent
+          title={title}
+          content={content}
+          onTitleChange={handleTitleChange}
+          onContentChange={handleContentChange}
+        />
+      </main>
     </div>
   );
 }
