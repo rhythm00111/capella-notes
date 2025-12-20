@@ -13,7 +13,7 @@ import {
   Clock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useNotesStore } from '@/hooks/useNotesStore';
+import { useNotesStore, getFilteredNotes } from '@/hooks/useNotesStore';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -237,8 +237,8 @@ function EmptyState() {
 }
 
 export function NotesListView() {
+  const store = useNotesStore();
   const {
-    filteredNotes,
     selectedNoteId,
     viewMode,
     sortBy,
@@ -251,7 +251,9 @@ export function NotesListView() {
     toggleFavorite,
     togglePinned,
     deleteNote,
-  } = useNotesStore();
+  } = store;
+  
+  const filteredNotes = getFilteredNotes(store);
 
   const handleMenuAction = (noteId: string, action: string) => {
     switch (action) {

@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
-import { useNotesStore } from '@/hooks/useNotesStore';
-import { useLocalSync } from '@/hooks/useLocalSync';
+import { useNotesStore, getSelectedNote } from '@/hooks/useNotesStore';
 import { NotesSidebar } from '@/components/notes/NotesSidebar';
 import { NotesListView } from '@/components/notes/NotesListView';
 import { NoteEditor } from '@/components/notes/NoteEditor';
@@ -9,10 +8,9 @@ import { QuickCaptureModal } from '@/components/notes/QuickCaptureModal';
 import { Toaster } from '@/components/ui/toaster';
 
 const Index = () => {
-  const { aiPanelOpen, selectedNote, openQuickCapture } = useNotesStore();
-  
-  // Initialize local sync
-  useLocalSync();
+  const store = useNotesStore();
+  const { aiPanelOpen, openQuickCapture } = store;
+  const selectedNote = getSelectedNote(store);
   
   // Keyboard shortcuts
   useEffect(() => {
@@ -31,19 +29,27 @@ const Index = () => {
     <>
       <div className="flex h-screen w-full overflow-hidden bg-background">
         {/* Left Sidebar */}
-        <NotesSidebar />
+        <div className="w-[280px] flex-shrink-0 h-full">
+          <NotesSidebar />
+        </div>
         
         {/* Middle - Notes List */}
-        <NotesListView />
+        <div className="w-[320px] flex-shrink-0 h-full">
+          <NotesListView />
+        </div>
         
         {/* Right - Editor */}
-        <div className="flex flex-1 min-w-0">
-          <div className="flex-1 min-w-0">
+        <div className="flex flex-1 min-w-0 h-full">
+          <div className="flex-1 min-w-0 h-full">
             <NoteEditor />
           </div>
           
           {/* AI Panel */}
-          {aiPanelOpen && selectedNote && <AIInsightsPanel />}
+          {aiPanelOpen && selectedNote && (
+            <div className="w-[300px] flex-shrink-0 h-full">
+              <AIInsightsPanel />
+            </div>
+          )}
         </div>
       </div>
       
