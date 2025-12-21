@@ -1,4 +1,3 @@
-import { forwardRef } from 'react';
 import { Plus, Search, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +10,7 @@ import {
 import { useNotesStore } from '../store/useNotesStore';
 import { getFolderNoteCount } from '../lib/notesSelectors';
 
-export const NotesTopBar = forwardRef<HTMLDivElement>(function NotesTopBar(_, ref) {
+export function NotesTopBar() {
   const { folders, notes, activeFolderId, searchQuery, selectFolder, setSearchQuery, createNote } =
     useNotesStore();
 
@@ -19,7 +18,7 @@ export const NotesTopBar = forwardRef<HTMLDivElement>(function NotesTopBar(_, re
   const activeFolder = folders.find((f) => f.id === activeFolderId);
 
   return (
-    <div ref={ref} className="flex-shrink-0 border-b border-border p-4 space-y-3">
+    <div className="flex-shrink-0 border-b border-border p-4 space-y-3">
       {/* Title Row */}
       <div className="flex items-center justify-between">
         <div>
@@ -37,7 +36,7 @@ export const NotesTopBar = forwardRef<HTMLDivElement>(function NotesTopBar(_, re
 
       {/* Controls Row */}
       <div className="flex items-center gap-3">
-        {/* Folder Selector - Using DropdownMenu instead of Select to avoid ref issues */}
+        {/* Folder Selector */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="w-[180px] justify-between">
@@ -72,6 +71,4 @@ export const NotesTopBar = forwardRef<HTMLDivElement>(function NotesTopBar(_, re
       </div>
     </div>
   );
-});
-
-NotesTopBar.displayName = 'NotesTopBar';
+}

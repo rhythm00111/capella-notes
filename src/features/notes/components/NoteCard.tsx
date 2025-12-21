@@ -1,4 +1,3 @@
-import { forwardRef } from 'react';
 import { Clock, Pin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Note } from '../types/note';
@@ -11,16 +10,12 @@ interface NoteCardProps {
   onClick: () => void;
 }
 
-export const NoteCard = forwardRef<HTMLDivElement, NoteCardProps>(function NoteCard(
-  { note, isSelected, folderName, onClick },
-  ref
-) {
+export function NoteCard({ note, isSelected, folderName, onClick }: NoteCardProps) {
   const preview = getPreview(note.content);
   const formattedDate = formatRelativeDate(note.updatedAt);
 
   return (
     <div
-      ref={ref}
       onClick={onClick}
       className={cn('note-card group cursor-pointer p-4', isSelected && 'selected')}
     >
@@ -48,6 +43,4 @@ export const NoteCard = forwardRef<HTMLDivElement, NoteCardProps>(function NoteC
       </div>
     </div>
   );
-});
-
-NoteCard.displayName = 'NoteCard';
+}
