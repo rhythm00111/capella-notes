@@ -458,4 +458,19 @@
   .glow-lg {
     box-shadow: 0 8px 24px hsl(var(--primary) / 0.3);
   }
+
+  /* ========== Z-INDEX SYSTEM ========== */
+  /* Prevents overlapping and layering issues */
+  .z-base { z-index: 0; }
+  .z-content { z-index: 1; }
+  .z-header { z-index: 10; }
+  .z-sidebar { z-index: 15; }
+  .z-dropdown { z-index: 20; }
+  .z-context-menu { z-index: 25; }
+  .z-overlay { z-index: 30; }
+  .z-modal { z-index: 40; }
+  .z-toast { z-index: 50; }
+  .z-tooltip { z-index: 60; }
+  .z-loading { z-index: 70; }
+  .z-emergency { z-index: 100; }
 }
