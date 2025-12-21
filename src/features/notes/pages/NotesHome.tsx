@@ -20,9 +20,10 @@ export function NotesHome() {
   const navigate = useNavigate();
 
   // Navigate to editor when a note is selected
+  // Only navigate if we're on the home page and a note is selected
   useEffect(() => {
     if (activeNoteId) {
-      navigate(`/notes/${activeNoteId}`);
+      navigate(`/notes/${activeNoteId}`, { replace: false });
     }
   }, [activeNoteId, navigate]);
 

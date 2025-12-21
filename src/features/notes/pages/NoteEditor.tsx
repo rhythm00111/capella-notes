@@ -45,12 +45,17 @@ export function NoteEditor() {
     }
   }, [note?.id]);
 
-  // Clear active note on unmount
+  // Clear active note on unmount to prevent re-navigation
   useEffect(() => {
+    // Set active note on mount
+    if (noteId) {
+      selectNote(noteId);
+    }
     return () => {
+      // Clear on unmount
       selectNote(null);
     };
-  }, [selectNote]);
+  }, [noteId, selectNote]);
 
   // Auto-save with debounce
   const handleSave = (updates: { title?: string; content?: string }) => {

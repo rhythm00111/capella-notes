@@ -23,6 +23,7 @@ import {
 import { cn } from '@/lib/utils';
 import { SaveIndicator, SaveStatus } from './SaveIndicator';
 import { KeyboardShortcutsHelp } from '../KeyboardShortcutsHelp';
+import { useNotesStore } from '../../store/useNotesStore';
 
 interface EditorTopBarProps {
   title: string;
@@ -46,6 +47,7 @@ export function EditorTopBar({
   onAISummarize,
 }: EditorTopBarProps) {
   const navigate = useNavigate();
+  const selectNote = useNotesStore((state) => state.selectNote);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [localTitle, setLocalTitle] = useState(title);
@@ -63,7 +65,10 @@ export function EditorTopBar({
   }, []);
 
   const handleBack = () => {
-    navigate('/notes');
+    // Clear active note FIRST to prevent re-navigation
+    selectNote(null);
+    // Use replace to prevent double history entries
+    navigate('/notes', { replace: true });
   };
 
   const handleTitleBlur = () => {
