@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Star, MoreHorizontal, Trash2, Check, Loader2, Keyboard } from 'lucide-react';
+import { ArrowLeft, Star, MoreHorizontal, Trash2, Check, Loader2, Keyboard, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -32,6 +32,7 @@ interface EditorTopBarProps {
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
   lastSaved?: Date;
+  onAISummarize?: () => void;
 }
 
 export function EditorTopBar({
@@ -42,6 +43,7 @@ export function EditorTopBar({
   isFavorite = false,
   onToggleFavorite,
   lastSaved,
+  onAISummarize,
 }: EditorTopBarProps) {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -141,6 +143,20 @@ export function EditorTopBar({
             <Check className="h-3.5 w-3.5 text-emerald-500" />
           )}
         </div>
+
+        {/* AI Summarize Button */}
+        {onAISummarize && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onAISummarize}
+            className="gap-2 text-muted-foreground hover:text-primary hidden sm:flex"
+            aria-label="AI Summarize"
+          >
+            <Sparkles className="h-4 w-4" />
+            <span className="hidden md:inline">AI Summarize</span>
+          </Button>
+        )}
 
         {/* Keyboard Shortcuts Help */}
         <KeyboardShortcutsHelp 

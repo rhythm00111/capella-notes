@@ -10,6 +10,7 @@ import { RightSidebar } from '../components/editor/RightSidebar';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { SubPagesSection } from '../components/editor/SubPagesSection';
 import { AISummaryCard } from '../components/AISummaryCard';
+import { AISummarizeModal } from '../components/AISummarizeModal';
 import { NoteVersion } from '../components/editor/VersionHistoryPanel';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -30,6 +31,7 @@ export function NoteEditor() {
   const [lastSaved, setLastSaved] = useState<Date | undefined>();
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
+  const [showAISummarize, setShowAISummarize] = useState(false);
   const [versions, setVersions] = useState<NoteVersion[]>([]);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const versionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -245,6 +247,7 @@ export function NoteEditor() {
         isFavorite={note.isPinned}
         onToggleFavorite={handleTogglePinned}
         lastSaved={lastSaved}
+        onAISummarize={() => setShowAISummarize(true)}
       />
 
       {/* Breadcrumb Navigation for Sub-pages */}
@@ -325,6 +328,13 @@ export function NoteEditor() {
           onNavigateToParent={handleNavigateToParent}
         />
       </div>
+
+      {/* AI Summarize Modal */}
+      <AISummarizeModal
+        isOpen={showAISummarize}
+        onClose={() => setShowAISummarize(false)}
+        notes={note ? [note] : []}
+      />
     </div>
   );
 }
