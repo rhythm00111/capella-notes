@@ -1,4 +1,3 @@
-import { forwardRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FileText } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -12,7 +11,7 @@ import {
 import { ALL_NOTES_FOLDER_ID } from '../types/folder';
 import { NoteCard } from './NoteCard';
 
-export const NotesList = forwardRef<HTMLDivElement>(function NotesList(_, ref) {
+export function NotesList() {
   const { notes, folders, activeFolderId, activeNoteId, searchQuery, selectNote, createNote } =
     useNotesStore();
 
@@ -35,7 +34,7 @@ export const NotesList = forwardRef<HTMLDivElement>(function NotesList(_, ref) {
 
   if (filteredNotes.length === 0) {
     return (
-      <div ref={ref} className="flex flex-col items-center justify-center h-full py-12 px-4 text-center">
+      <div className="flex flex-col items-center justify-center h-full py-12 px-4 text-center">
         <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
           <FileText className="h-8 w-8 text-muted-foreground" />
         </div>
@@ -51,7 +50,7 @@ export const NotesList = forwardRef<HTMLDivElement>(function NotesList(_, ref) {
   }
 
   return (
-    <ScrollArea ref={ref} className="flex-1">
+    <ScrollArea className="flex-1">
       <div className="p-3 space-y-2">
         <AnimatePresence mode="popLayout">
           {filteredNotes.map((note) => (
@@ -74,6 +73,4 @@ export const NotesList = forwardRef<HTMLDivElement>(function NotesList(_, ref) {
       </div>
     </ScrollArea>
   );
-});
-
-NotesList.displayName = 'NotesList';
+}
