@@ -1,5 +1,5 @@
 import { useState, forwardRef } from 'react';
-import { PanelRightClose, PanelRight, Clock, Info } from 'lucide-react';
+import { PanelRightClose, PanelRight, Clock, Info, FileText, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { VersionHistoryPanel } from './VersionHistoryPanel';
@@ -18,6 +18,11 @@ interface RightSidebarProps {
   createdAt?: Date;
   updatedAt?: Date;
   wordCount: number;
+  // Sub-page related props
+  isSubPage?: boolean;
+  parentTitle?: string;
+  childCount?: number;
+  onNavigateToParent?: () => void;
 }
 
 export const RightSidebar = forwardRef<HTMLElement, RightSidebarProps>(function RightSidebar({
@@ -31,6 +36,10 @@ export const RightSidebar = forwardRef<HTMLElement, RightSidebarProps>(function 
   createdAt,
   updatedAt,
   wordCount,
+  isSubPage = false,
+  parentTitle,
+  childCount = 0,
+  onNavigateToParent,
 }, ref) {
   const [activeTab, setActiveTab] = useState('history');
 
@@ -143,6 +152,35 @@ export const RightSidebar = forwardRef<HTMLElement, RightSidebarProps>(function 
                       </div>
                     )}
                   </div>
+                  {/* Sub-page hierarchy info */}
+                  {(isSubPage || childCount > 0) && (
+                    <div className="border-t border-border pt-3 mt-3">
+                      <div className="flex items-center gap-2 text-foreground mb-2">
+                        <FileText className="h-4 w-4" />
+                        <span className="text-sm font-medium">Hierarchy</span>
+                      </div>
+                      
+                      {isSubPage && parentTitle && (
+                        <div className="flex justify-between items-center text-sm mb-2">
+                          <span className="text-muted-foreground">Parent</span>
+                          <button
+                            onClick={onNavigateToParent}
+                            className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                          >
+                            <ArrowUp className="h-3 w-3" />
+                            {parentTitle}
+                          </button>
+                        </div>
+                      )}
+                      
+                      {childCount > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Sub-pages</span>
+                          <span className="font-medium">{childCount}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </TabsContent>

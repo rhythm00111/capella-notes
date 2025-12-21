@@ -31,9 +31,15 @@ export const useActiveFolder = (): Folder | undefined => {
   return folders.find((f) => f.id === activeFolderId);
 };
 
-// Pure function: Get notes filtered by folder (excludes deleted)
-export const getNotesByFolder = (notes: Note[], folderId: string): Note[] => {
-  const activeNotes = notes.filter((note) => !note.isDeleted);
+// Pure function: Get notes filtered by folder (excludes deleted and sub-pages by default)
+export const getNotesByFolder = (notes: Note[], folderId: string, includeSubPages: boolean = false): Note[] => {
+  let activeNotes = notes.filter((note) => !note.isDeleted);
+  
+  // Filter out sub-pages unless explicitly included
+  if (!includeSubPages) {
+    activeNotes = activeNotes.filter((note) => !note.isSubPage);
+  }
+  
   if (folderId === ALL_NOTES_FOLDER_ID) {
     return activeNotes;
   }
@@ -57,9 +63,9 @@ export const sortNotesByRecent = (notes: Note[]): Note[] => {
   });
 };
 
-// Pure function: Get folder note count (excludes deleted)
+// Pure function: Get folder note count (excludes deleted and sub-pages)
 export const getFolderNoteCount = (notes: Note[], folderId: string): number => {
-  const activeNotes = notes.filter((note) => !note.isDeleted);
+  const activeNotes = notes.filter((note) => !note.isDeleted && !note.isSubPage);
   if (folderId === ALL_NOTES_FOLDER_ID) {
     return activeNotes.length;
   }
