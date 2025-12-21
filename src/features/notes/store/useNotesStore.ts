@@ -31,9 +31,11 @@ interface NotesActions {
 
   // Note actions
   createNote: (folderId?: string, title?: string) => Note;
+  createSubPage: (parentId: string, title?: string) => Note;
   updateNote: (id: string, updates: Partial<Pick<Note, 'title' | 'content' | 'isPinned'>>) => void;
   deleteNote: (id: string) => void;
   selectNote: (id: string | null) => void;
+  getNoteBreadcrumbs: (noteId: string) => Array<{ id: string; title: string }>;
 
   // UI actions
   setSearchQuery: (query: string) => void;
@@ -115,6 +117,9 @@ export const useNotesStore = create<NotesState & NotesActions>()(
           updatedAt: new Date().toISOString(),
           isDeleted: false,
           isPinned: false,
+          parentId: null,
+          childIds: [],
+          isSubPage: false,
         };
 
         set((state) => ({
@@ -124,6 +129,58 @@ export const useNotesStore = create<NotesState & NotesActions>()(
         }));
 
         return note;
+      },
+
+      createSubPage: (parentId: string, title?: string) => {
+        const { notes } = get();
+        const parentNote = notes.find((n) => n.id === parentId);
+        
+        const subPage: Note = {
+          id: generateId(),
+          title: title || 'Untitled Sub-page',
+          content: '',
+          folderId: parentNote?.folderId || ALL_NOTES_FOLDER_ID,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isDeleted: false,
+          isPinned: false,
+          parentId,
+          childIds: [],
+          isSubPage: true,
+        };
+
+        set((state) => ({
+          notes: [
+            subPage,
+            ...state.notes.map((note) =>
+              note.id === parentId
+                ? { ...note, childIds: [...(note.childIds || []), subPage.id] }
+                : note
+            ),
+          ],
+          activeNoteId: subPage.id,
+        }));
+
+        return subPage;
+      },
+
+      getNoteBreadcrumbs: (noteId: string) => {
+        const { notes } = get();
+        const breadcrumbs: Array<{ id: string; title: string }> = [];
+        
+        let currentNote = notes.find((n) => n.id === noteId);
+        
+        while (currentNote) {
+          breadcrumbs.unshift({ id: currentNote.id, title: currentNote.title });
+          
+          if (currentNote.parentId) {
+            currentNote = notes.find((n) => n.id === currentNote!.parentId);
+          } else {
+            break;
+          }
+        }
+        
+        return breadcrumbs;
       },
 
       updateNote: (id: string, updates: Partial<Pick<Note, 'title' | 'content' | 'isPinned'>>) => {

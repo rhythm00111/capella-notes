@@ -15,6 +15,7 @@ import {
   Link,
   AlertCircle,
   Calculator,
+  FileText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -28,10 +29,12 @@ interface SlashCommand {
 }
 
 const slashCommands: SlashCommand[] = [
-  // Text
-  { id: 'heading1', label: 'Heading 1', description: 'Big section heading', icon: Heading1, keywords: ['h1', 'title', 'heading'], group: 'Text' },
-  { id: 'heading2', label: 'Heading 2', description: 'Medium section heading', icon: Heading2, keywords: ['h2', 'subtitle'], group: 'Text' },
-  { id: 'heading3', label: 'Heading 3', description: 'Small section heading', icon: Heading3, keywords: ['h3', 'subheading'], group: 'Text' },
+  // Structure
+  { id: 'subpage', label: 'Sub-page', description: 'Create a page inside this note', icon: FileText, keywords: ['page', 'nested', 'child'], group: 'Structure' },
+  { id: 'heading1', label: 'Heading 1', description: 'Big section heading', icon: Heading1, keywords: ['h1', 'title', 'heading'], group: 'Structure' },
+  { id: 'heading2', label: 'Heading 2', description: 'Medium section heading', icon: Heading2, keywords: ['h2', 'subtitle'], group: 'Structure' },
+  { id: 'heading3', label: 'Heading 3', description: 'Small section heading', icon: Heading3, keywords: ['h3', 'subheading'], group: 'Structure' },
+  { id: 'divider', label: 'Divider', description: 'Separate content sections', icon: Minus, keywords: ['hr', 'line', 'separator'], group: 'Structure' },
   
   // Lists
   { id: 'bullet', label: 'Bullet List', description: 'Create a bullet list', icon: List, keywords: ['ul', 'unordered', 'list'], group: 'Lists' },
@@ -41,7 +44,6 @@ const slashCommands: SlashCommand[] = [
   // Blocks
   { id: 'quote', label: 'Quote', description: 'Capture a quote', icon: Quote, keywords: ['blockquote', 'citation'], group: 'Blocks' },
   { id: 'code', label: 'Code Block', description: 'Display code with syntax', icon: Code, keywords: ['codeblock', 'snippet', 'pre'], group: 'Blocks' },
-  { id: 'divider', label: 'Divider', description: 'Separate content sections', icon: Minus, keywords: ['hr', 'line', 'separator'], group: 'Blocks' },
   { id: 'callout', label: 'Callout', description: 'Highlight important info', icon: AlertCircle, keywords: ['info', 'warning', 'note'], group: 'Blocks' },
   
   // Advanced

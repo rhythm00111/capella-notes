@@ -6,22 +6,25 @@ import { EditorTopBar } from '../components/editor/EditorTopBar';
 import { EditorContent, EditorContentRef } from '../components/editor/EditorContent';
 import { EditorSidebar } from '../components/editor/EditorSidebar';
 import { RightSidebar } from '../components/editor/RightSidebar';
+import { Breadcrumb } from '../components/Breadcrumb';
 import { NoteVersion } from '../components/editor/VersionHistoryPanel';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { generateId } from '../lib/notesHelpers';
 import { AUTO_SAVE_DELAY } from '../lib/notesConstants';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 export function NoteEditor() {
   const { noteId } = useParams<{ noteId: string }>();
   const navigate = useNavigate();
-  const { notes, updateNote, deleteNote, selectNote, createNote } = useNotesStore();
+  const { notes, updateNote, deleteNote, selectNote, createNote, getNoteBreadcrumbs } = useNotesStore();
 
   const note = getNoteById(notes, noteId || null);
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | undefined>();
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
   const [versions, setVersions] = useState<NoteVersion[]>([]);
@@ -57,7 +60,20 @@ export function NoteEditor() {
     saveTimeoutRef.current = setTimeout(() => {
       updateNote(noteId, updates);
       setIsSaving(false);
-    }, AUTO_SAVE_DELAY / 4); // Quick save for responsiveness
+      setLastSaved(new Date());
+    }, AUTO_SAVE_DELAY / 4);
+  };
+
+  // Get breadcrumbs for sub-page navigation
+  const breadcrumbs = noteId ? getNoteBreadcrumbs(noteId) : [];
+  const showBreadcrumbs = breadcrumbs.length > 1;
+
+  const handleBreadcrumbNavigate = (id: string) => {
+    if (id === 'home') {
+      navigate('/notes');
+    } else {
+      navigate(`/notes/${id}`);
+    }
   };
 
   const handleTitleChange = (value: string) => {
@@ -184,7 +200,15 @@ export function NoteEditor() {
         isSaving={isSaving}
         isFavorite={note.isPinned}
         onToggleFavorite={handleTogglePinned}
+        lastSaved={lastSaved}
       />
+
+      {/* Breadcrumb Navigation for Sub-pages */}
+      {showBreadcrumbs && (
+        <div className="px-6 md:px-10 pt-4">
+          <Breadcrumb items={breadcrumbs} onNavigate={handleBreadcrumbNavigate} />
+        </div>
+      )}
 
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar */}

@@ -216,6 +216,10 @@ export const EditorContent = forwardRef<EditorContentRef, EditorContentProps>(
         let insertText = '';
 
         switch (command.id) {
+          case 'subpage':
+            // Sub-page is handled specially - insert a placeholder
+            insertText = '[[Page: Untitled Sub-page]]';
+            break;
           case 'heading1':
             insertText = '# ';
             break;
