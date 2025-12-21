@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Star, MoreHorizontal, Trash2, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, Star, MoreHorizontal, Trash2, Check, Loader2, Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -21,6 +21,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
+import { SaveIndicator, SaveStatus } from './SaveIndicator';
+import { KeyboardShortcutsHelp } from '../KeyboardShortcutsHelp';
 
 interface EditorTopBarProps {
   title: string;
@@ -29,6 +31,7 @@ interface EditorTopBarProps {
   isSaving: boolean;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
+  lastSaved?: Date;
 }
 
 export function EditorTopBar({
@@ -38,6 +41,7 @@ export function EditorTopBar({
   isSaving,
   isFavorite = false,
   onToggleFavorite,
+  lastSaved,
 }: EditorTopBarProps) {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -122,18 +126,35 @@ export function EditorTopBar({
 
       {/* Right Section */}
       <div className="flex items-center gap-2">
-        {/* Save Status */}
-        <div className={cn('save-status', isSaving ? 'saving' : 'saved')}>
-          <span className={cn('save-dot', isSaving ? 'saving' : 'saved')} />
-          <span className="hidden sm:inline">
-            {isSaving ? 'Saving...' : 'Saved'}
-          </span>
+        {/* Save Status - Enhanced */}
+        <SaveIndicator 
+          status={isSaving ? 'saving' : 'saved'} 
+          lastSaved={lastSaved}
+          className="hidden sm:flex"
+        />
+        
+        {/* Mobile save indicator */}
+        <div className="flex items-center gap-1 sm:hidden">
           {isSaving ? (
-            <Loader2 className="h-3 w-3 animate-spin sm:hidden" />
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
           ) : (
-            <Check className="h-3 w-3 sm:hidden" />
+            <Check className="h-3.5 w-3.5 text-emerald-500" />
           )}
         </div>
+
+        {/* Keyboard Shortcuts Help */}
+        <KeyboardShortcutsHelp 
+          trigger={
+            <Button
+              variant="ghost"
+              size="icon"
+              className="btn-icon hidden md:flex"
+              aria-label="View keyboard shortcuts"
+            >
+              <Keyboard className="h-4 w-4" />
+            </Button>
+          }
+        />
 
         {/* Favorite Toggle */}
         <Button
@@ -144,6 +165,8 @@ export function EditorTopBar({
             'btn-icon',
             isFavorite && 'text-warning'
           )}
+          aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          title={isFavorite ? 'Remove from favorites' : 'Add to favorites (⌘⇧F)'}
         >
           <Star className={cn('h-5 w-5', isFavorite && 'fill-current')} />
         </Button>
@@ -151,7 +174,12 @@ export function EditorTopBar({
         {/* More Actions */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="btn-icon">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="btn-icon"
+              aria-label="More actions"
+            >
               <MoreHorizontal className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
@@ -180,6 +208,8 @@ export function EditorTopBar({
               variant="ghost"
               size="icon"
               className="btn-icon text-muted-foreground hover:text-destructive"
+              aria-label="Delete note"
+              title="Delete note"
             >
               <Trash2 className="h-5 w-5" />
             </Button>
