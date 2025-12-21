@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import { Folder, FolderPlus, Trash2, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ import { useNotesStore } from '../store/useNotesStore';
 import { getFolderNoteCount } from '../lib/notesSelectors';
 import { ALL_NOTES_FOLDER_ID } from '../types/folder';
 
-export function FolderList() {
+export const FolderList = forwardRef<HTMLDivElement>(function FolderList(_, ref) {
   const { folders, notes, activeFolderId, selectFolder, createFolder, deleteFolder } =
     useNotesStore();
   const [newFolderName, setNewFolderName] = useState('');
@@ -36,7 +36,7 @@ export function FolderList() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div ref={ref} className="flex flex-col h-full">
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b border-border">
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -121,4 +121,6 @@ export function FolderList() {
       </ScrollArea>
     </div>
   );
-}
+});
+
+FolderList.displayName = 'FolderList';
