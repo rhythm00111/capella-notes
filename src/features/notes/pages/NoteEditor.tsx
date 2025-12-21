@@ -9,6 +9,7 @@ import { EditorSidebar } from '../components/editor/EditorSidebar';
 import { RightSidebar } from '../components/editor/RightSidebar';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { SubPagesSection } from '../components/editor/SubPagesSection';
+import { AISummaryCard } from '../components/AISummaryCard';
 import { NoteVersion } from '../components/editor/VersionHistoryPanel';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -274,6 +275,10 @@ export function NoteEditor() {
           )}
         >
           <div className="flex flex-col min-h-full">
+            {/* AI Summary Card */}
+            <div className="px-6 md:px-10 lg:px-16 pt-6">
+              <AISummaryCard content={content} noteId={noteId || ''} />
+            </div>
             <EditorContent
               ref={editorRef}
               title={title}

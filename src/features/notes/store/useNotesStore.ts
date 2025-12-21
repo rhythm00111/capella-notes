@@ -38,9 +38,17 @@ interface NotesActions {
   deleteNote: (id: string) => void;
   deleteSubPage: (subPageId: string) => void;
   selectNote: (id: string | null) => void;
+  duplicateNote: (noteId: string) => Note | null;
+  moveNote: (noteId: string, folderId: string) => void;
   getNoteBreadcrumbs: (noteId: string) => Array<{ id: string; title: string }>;
   getChildNotes: (noteId: string) => Note[];
   getParentNote: (noteId: string) => Note | null;
+
+  // Trash actions
+  restoreNote: (noteId: string) => void;
+  permanentDeleteNote: (noteId: string) => void;
+  emptyTrash: () => void;
+  getDeletedNotes: () => Note[];
 
   // UI actions
   setSearchQuery: (query: string) => void;
@@ -49,6 +57,12 @@ interface NotesActions {
   openCreateNoteDialog: () => void;
   closeCreateNoteDialog: () => void;
   toggleShowSubPages: () => void;
+  setCurrentView: (view: 'notes' | 'trash') => void;
+  currentView: 'notes' | 'trash';
+
+  // Panel state
+  isFolderPanelCollapsed: boolean;
+  toggleFolderPanel: () => void;
 
   // Legacy aliases for compatibility
   setActiveFolder: (id: string) => void;
@@ -69,6 +83,8 @@ export const useNotesStore = create<NotesState & NotesActions>()(
       isCreatingFolder: false,
       isCreatingNote: false,
       showSubPages: false,
+      currentView: 'notes' as const,
+      isFolderPanelCollapsed: false,
 
       // Folder Actions
       createFolder: (name: string) => {
@@ -107,7 +123,7 @@ export const useNotesStore = create<NotesState & NotesActions>()(
       },
 
       selectFolder: (id: string) => {
-        set({ activeFolderId: id, activeNoteId: null });
+        set({ activeFolderId: id, activeNoteId: null, currentView: 'notes' });
       },
 
       // Note Actions
@@ -177,6 +193,40 @@ export const useNotesStore = create<NotesState & NotesActions>()(
         }));
 
         return subPage;
+      },
+
+      duplicateNote: (noteId: string) => {
+        const { notes } = get();
+        const note = notes.find((n) => n.id === noteId);
+        if (!note) return null;
+
+        const duplicate: Note = {
+          ...note,
+          id: generateId(),
+          title: `${note.title} (Copy)`,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isPinned: false,
+          parentId: null,
+          childIds: [],
+          isSubPage: false,
+        };
+
+        set((state) => ({
+          notes: [duplicate, ...state.notes],
+        }));
+
+        return duplicate;
+      },
+
+      moveNote: (noteId: string, folderId: string) => {
+        set((state) => ({
+          notes: state.notes.map((note) =>
+            note.id === noteId
+              ? { ...note, folderId, updatedAt: new Date().toISOString() }
+              : note
+          ),
+        }));
       },
 
       getNoteBreadcrumbs: (noteId: string) => {
@@ -291,6 +341,34 @@ export const useNotesStore = create<NotesState & NotesActions>()(
         set({ activeNoteId: id });
       },
 
+      // Trash Actions
+      restoreNote: (noteId: string) => {
+        set((state) => ({
+          notes: state.notes.map((note) =>
+            note.id === noteId
+              ? { ...note, isDeleted: false, updatedAt: new Date().toISOString() }
+              : note
+          ),
+        }));
+      },
+
+      permanentDeleteNote: (noteId: string) => {
+        set((state) => ({
+          notes: state.notes.filter((n) => n.id !== noteId),
+        }));
+      },
+
+      emptyTrash: () => {
+        set((state) => ({
+          notes: state.notes.filter((n) => !n.isDeleted),
+        }));
+      },
+
+      getDeletedNotes: () => {
+        const { notes } = get();
+        return notes.filter((n) => n.isDeleted);
+      },
+
       // UI Actions
       setSearchQuery: (query: string) => {
         set({ searchQuery: query });
@@ -316,6 +394,14 @@ export const useNotesStore = create<NotesState & NotesActions>()(
         set((state) => ({ showSubPages: !state.showSubPages }));
       },
 
+      setCurrentView: (view: 'notes' | 'trash') => {
+        set({ currentView: view });
+      },
+
+      toggleFolderPanel: () => {
+        set((state) => ({ isFolderPanelCollapsed: !state.isFolderPanelCollapsed }));
+      },
+
       // Legacy aliases
       setActiveFolder: (id: string) => {
         set({ activeFolderId: id, activeNoteId: null });
@@ -334,6 +420,7 @@ export const useNotesStore = create<NotesState & NotesActions>()(
         activeFolderId: state.activeFolderId,
         activeNoteId: state.activeNoteId,
         showSubPages: state.showSubPages,
+        isFolderPanelCollapsed: state.isFolderPanelCollapsed,
       }),
     }
   )

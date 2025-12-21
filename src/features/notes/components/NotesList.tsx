@@ -1,7 +1,10 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FileText } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { useNotesStore } from '../store/useNotesStore';
 import {
   getNotesByFolder,
@@ -10,10 +13,30 @@ import {
 } from '../lib/notesSelectors';
 import { ALL_NOTES_FOLDER_ID } from '../types/folder';
 import { NoteCard } from './NoteCard';
+import { NoteContextMenu } from './NoteContextMenu';
+import { MoveFolderDialog } from './MoveFolderDialog';
 
 export function NotesList() {
-  const { notes, folders, activeFolderId, activeNoteId, searchQuery, selectNote, createNote, showSubPages } =
-    useNotesStore();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { 
+    notes, 
+    folders, 
+    activeFolderId, 
+    activeNoteId, 
+    searchQuery, 
+    selectNote, 
+    createNote, 
+    showSubPages,
+    deleteNote,
+    duplicateNote,
+    moveNote,
+    updateNote,
+  } = useNotesStore();
+
+  const [moveDialogOpen, setMoveDialogOpen] = useState(false);
+  const [noteToMove, setNoteToMove] = useState<string | null>(null);
+  const [noteToRename, setNoteToRename] = useState<string | null>(null);
 
   // Filter notes by folder (and sub-pages based on toggle)
   let filteredNotes = getNotesByFolder(notes, activeFolderId, showSubPages);
@@ -30,6 +53,67 @@ export function NotesList() {
     if (folderId === ALL_NOTES_FOLDER_ID) return undefined;
     const folder = folders.find((f) => f.id === folderId);
     return folder?.name;
+  };
+
+  // Context menu handlers
+  const handleOpen = (noteId: string) => {
+    selectNote(noteId);
+    navigate(`/notes/${noteId}`);
+  };
+
+  const handleDuplicate = (noteId: string) => {
+    const duplicate = duplicateNote(noteId);
+    if (duplicate) {
+      toast({ title: 'Note duplicated' });
+    }
+  };
+
+  const handleRename = (noteId: string) => {
+    // Navigate to editor focused on title
+    navigate(`/notes/${noteId}`);
+  };
+
+  const handleDownload = (noteId: string) => {
+    const note = notes.find((n) => n.id === noteId);
+    if (!note) return;
+
+    const blob = new Blob([note.content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${note.title || 'untitled'}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: 'Note downloaded' });
+  };
+
+  const handleShare = () => {
+    toast({ title: 'Share feature coming soon!' });
+  };
+
+  const handleMove = (noteId: string) => {
+    setNoteToMove(noteId);
+    setMoveDialogOpen(true);
+  };
+
+  const handleMoveConfirm = (folderId: string) => {
+    if (noteToMove) {
+      moveNote(noteToMove, folderId);
+      toast({ title: 'Note moved' });
+    }
+  };
+
+  const handleDelete = (noteId: string) => {
+    deleteNote(noteId);
+    toast({ title: 'Note moved to trash' });
+  };
+
+  const handleTogglePin = (noteId: string) => {
+    const note = notes.find((n) => n.id === noteId);
+    if (note) {
+      updateNote(noteId, { isPinned: !note.isPinned });
+      toast({ title: note.isPinned ? 'Note unpinned' : 'Note pinned' });
+    }
   };
 
   if (filteredNotes.length === 0) {
@@ -49,28 +133,57 @@ export function NotesList() {
     );
   }
 
+  const noteToMoveData = noteToMove ? notes.find((n) => n.id === noteToMove) : null;
+
   return (
-    <ScrollArea className="flex-1">
-      <div className="p-3 space-y-2">
-        <AnimatePresence mode="popLayout">
-          {filteredNotes.map((note) => (
-            <motion.div
-              key={note.id}
-              layout
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-            >
-              <NoteCard
-                note={note}
-                isSelected={note.id === activeNoteId}
-                folderName={getFolderName(note.folderId)}
-                onClick={() => selectNote(note.id)}
-              />
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-    </ScrollArea>
+    <>
+      <ScrollArea className="flex-1">
+        <div className="p-3 space-y-2">
+          <AnimatePresence mode="popLayout">
+            {filteredNotes.map((note) => (
+              <motion.div
+                key={note.id}
+                layout
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <NoteContextMenu
+                  onOpen={() => handleOpen(note.id)}
+                  onDuplicate={() => handleDuplicate(note.id)}
+                  onRename={() => handleRename(note.id)}
+                  onDownload={() => handleDownload(note.id)}
+                  onShare={handleShare}
+                  onMove={() => handleMove(note.id)}
+                  onDelete={() => handleDelete(note.id)}
+                  onTogglePin={() => handleTogglePin(note.id)}
+                  isPinned={note.isPinned}
+                >
+                  <div>
+                    <NoteCard
+                      note={note}
+                      isSelected={note.id === activeNoteId}
+                      folderName={getFolderName(note.folderId)}
+                      onClick={() => handleOpen(note.id)}
+                    />
+                  </div>
+                </NoteContextMenu>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      </ScrollArea>
+
+      <MoveFolderDialog
+        isOpen={moveDialogOpen}
+        onClose={() => {
+          setMoveDialogOpen(false);
+          setNoteToMove(null);
+        }}
+        folders={folders}
+        currentFolderId={noteToMoveData?.folderId || ALL_NOTES_FOLDER_ID}
+        onMove={handleMoveConfirm}
+      />
+    </>
   );
 }
