@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, forwardRef } from 'react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { 
   Clock, 
@@ -33,12 +33,12 @@ interface VersionHistoryPanelProps {
   onRestore: (version: NoteVersion) => void;
 }
 
-export function VersionHistoryPanel({
+export const VersionHistoryPanel = forwardRef<HTMLDivElement, VersionHistoryPanelProps>(function VersionHistoryPanel({
   versions,
   currentContent,
   currentTitle,
   onRestore,
-}: VersionHistoryPanelProps) {
+}, ref) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [diffDialogOpen, setDiffDialogOpen] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<NoteVersion | null>(null);
@@ -289,4 +289,6 @@ export function VersionHistoryPanel({
       </Dialog>
     </>
   );
-}
+});
+
+VersionHistoryPanel.displayName = 'VersionHistoryPanel';

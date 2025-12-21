@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import { PanelRightClose, PanelRight, Clock, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { VersionHistoryPanel, NoteVersion } from './VersionHistoryPanel';
+import { VersionHistoryPanel } from './VersionHistoryPanel';
+import type { NoteVersion } from './VersionHistoryPanel';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
@@ -19,7 +20,7 @@ interface RightSidebarProps {
   wordCount: number;
 }
 
-export function RightSidebar({
+export const RightSidebar = forwardRef<HTMLElement, RightSidebarProps>(function RightSidebar({
   isOpen,
   onToggle,
   content,
@@ -30,7 +31,7 @@ export function RightSidebar({
   createdAt,
   updatedAt,
   wordCount,
-}: RightSidebarProps) {
+}, ref) {
   const [activeTab, setActiveTab] = useState('history');
 
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
@@ -150,4 +151,6 @@ export function RightSidebar({
       </aside>
     </>
   );
-}
+});
+
+RightSidebar.displayName = 'RightSidebar';

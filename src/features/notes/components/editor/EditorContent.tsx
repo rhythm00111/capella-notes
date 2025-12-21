@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { SlashCommandMenu, SlashCommand } from './SlashCommandMenu';
+import { SlashCommandMenu } from './SlashCommandMenu';
+import type { SlashCommand } from './SlashCommandMenu';
 import { FloatingFormatBar } from './FloatingFormatBar';
 import { NoteLinkMenu } from './NoteLinkMenu';
 import { Note } from '../../types/note';
