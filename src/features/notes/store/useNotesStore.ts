@@ -5,6 +5,7 @@ import { Folder, ALL_NOTES_FOLDER_ID, ALL_NOTES_FOLDER } from '../types/folder';
 import { initialNotes, initialFolders } from '../data/initialNotes';
 import { generateId } from '../lib/notesHelpers';
 import { STORAGE_KEY, DEFAULT_FOLDER_COLOR } from '../lib/notesConstants';
+import { getAllDescendants, removeSubPageMarker, canNestSubPage } from '../lib/subPageHelpers';
 
 // State shape
 interface NotesState {
@@ -20,6 +21,7 @@ interface NotesState {
   searchQuery: string;
   isCreatingFolder: boolean;
   isCreatingNote: boolean;
+  showSubPages: boolean;
 }
 
 // Actions
@@ -31,11 +33,14 @@ interface NotesActions {
 
   // Note actions
   createNote: (folderId?: string, title?: string) => Note;
-  createSubPage: (parentId: string, title?: string) => Note;
+  createSubPage: (parentId: string, title?: string) => Note | null;
   updateNote: (id: string, updates: Partial<Pick<Note, 'title' | 'content' | 'isPinned'>>) => void;
   deleteNote: (id: string) => void;
+  deleteSubPage: (subPageId: string) => void;
   selectNote: (id: string | null) => void;
   getNoteBreadcrumbs: (noteId: string) => Array<{ id: string; title: string }>;
+  getChildNotes: (noteId: string) => Note[];
+  getParentNote: (noteId: string) => Note | null;
 
   // UI actions
   setSearchQuery: (query: string) => void;
@@ -43,6 +48,7 @@ interface NotesActions {
   closeCreateFolderDialog: () => void;
   openCreateNoteDialog: () => void;
   closeCreateNoteDialog: () => void;
+  toggleShowSubPages: () => void;
 
   // Legacy aliases for compatibility
   setActiveFolder: (id: string) => void;
@@ -62,6 +68,7 @@ export const useNotesStore = create<NotesState & NotesActions>()(
       searchQuery: '',
       isCreatingFolder: false,
       isCreatingNote: false,
+      showSubPages: false,
 
       // Folder Actions
       createFolder: (name: string) => {
@@ -135,11 +142,19 @@ export const useNotesStore = create<NotesState & NotesActions>()(
         const { notes } = get();
         const parentNote = notes.find((n) => n.id === parentId);
         
+        if (!parentNote) return null;
+        
+        // Check max depth (3 levels)
+        if (!canNestSubPage(notes, parentId, 3)) {
+          console.warn('Maximum nesting depth reached');
+          return null;
+        }
+        
         const subPage: Note = {
           id: generateId(),
           title: title || 'Untitled Sub-page',
           content: '',
-          folderId: parentNote?.folderId || ALL_NOTES_FOLDER_ID,
+          folderId: parentNote.folderId,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           isDeleted: false,
@@ -154,7 +169,7 @@ export const useNotesStore = create<NotesState & NotesActions>()(
             subPage,
             ...state.notes.map((note) =>
               note.id === parentId
-                ? { ...note, childIds: [...(note.childIds || []), subPage.id] }
+                ? { ...note, childIds: [...(note.childIds || []), subPage.id], updatedAt: new Date().toISOString() }
                 : note
             ),
           ],
@@ -183,6 +198,30 @@ export const useNotesStore = create<NotesState & NotesActions>()(
         return breadcrumbs;
       },
 
+      getChildNotes: (noteId: string) => {
+        const { notes } = get();
+        const parentNote = notes.find((n) => n.id === noteId);
+        
+        if (!parentNote?.childIds?.length) return [];
+        
+        return notes
+          .filter((n) => parentNote.childIds!.includes(n.id) && !n.isDeleted)
+          .sort((a, b) => {
+            const aIndex = parentNote.childIds!.indexOf(a.id);
+            const bIndex = parentNote.childIds!.indexOf(b.id);
+            return aIndex - bIndex;
+          });
+      },
+
+      getParentNote: (noteId: string) => {
+        const { notes } = get();
+        const note = notes.find((n) => n.id === noteId);
+        
+        if (!note?.parentId) return null;
+        
+        return notes.find((n) => n.id === note.parentId && !n.isDeleted) || null;
+      },
+
       updateNote: (id: string, updates: Partial<Pick<Note, 'title' | 'content' | 'isPinned'>>) => {
         set((state) => ({
           notes: state.notes.map((note) =>
@@ -200,6 +239,51 @@ export const useNotesStore = create<NotesState & NotesActions>()(
               : note
           ),
           activeNoteId: state.activeNoteId === id ? null : state.activeNoteId,
+        }));
+      },
+
+      deleteSubPage: (subPageId: string) => {
+        const { notes, activeNoteId } = get();
+        const subPage = notes.find((n) => n.id === subPageId);
+        
+        if (!subPage?.isSubPage || !subPage.parentId) {
+          // If not a sub-page, use regular delete
+          get().deleteNote(subPageId);
+          return;
+        }
+
+        const parentNote = notes.find((n) => n.id === subPage.parentId);
+        if (!parentNote) return;
+
+        // Get all descendants to delete
+        const descendantIds = getAllDescendants(notes, subPageId);
+        const idsToDelete = [subPageId, ...descendantIds];
+
+        // Check if we need to navigate away
+        const needsNavigation = idsToDelete.includes(activeNoteId || '');
+
+        // Remove sub-page marker from parent content
+        const updatedParentContent = removeSubPageMarker(parentNote.content, subPage.title);
+
+        set((state) => ({
+          notes: state.notes.map((note) => {
+            // Mark sub-page and descendants as deleted
+            if (idsToDelete.includes(note.id)) {
+              return { ...note, isDeleted: true, updatedAt: new Date().toISOString() };
+            }
+            // Update parent note
+            if (note.id === parentNote.id) {
+              return {
+                ...note,
+                content: updatedParentContent,
+                childIds: (note.childIds || []).filter((id) => id !== subPageId),
+                updatedAt: new Date().toISOString(),
+              };
+            }
+            return note;
+          }),
+          // Navigate to parent if we deleted the current note
+          activeNoteId: needsNavigation ? parentNote.id : state.activeNoteId,
         }));
       },
 
@@ -228,6 +312,10 @@ export const useNotesStore = create<NotesState & NotesActions>()(
         set({ isCreatingNote: false });
       },
 
+      toggleShowSubPages: () => {
+        set((state) => ({ showSubPages: !state.showSubPages }));
+      },
+
       // Legacy aliases
       setActiveFolder: (id: string) => {
         set({ activeFolderId: id, activeNoteId: null });
@@ -245,6 +333,7 @@ export const useNotesStore = create<NotesState & NotesActions>()(
         folders: state.folders,
         activeFolderId: state.activeFolderId,
         activeNoteId: state.activeNoteId,
+        showSubPages: state.showSubPages,
       }),
     }
   )

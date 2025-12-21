@@ -2,11 +2,13 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useNotesStore } from '../store/useNotesStore';
 import { getNoteById } from '../lib/notesSelectors';
+import { canNestSubPage } from '../lib/subPageHelpers';
 import { EditorTopBar } from '../components/editor/EditorTopBar';
 import { EditorContent, EditorContentRef } from '../components/editor/EditorContent';
 import { EditorSidebar } from '../components/editor/EditorSidebar';
 import { RightSidebar } from '../components/editor/RightSidebar';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { SubPagesSection } from '../components/editor/SubPagesSection';
 import { NoteVersion } from '../components/editor/VersionHistoryPanel';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -17,7 +19,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 export function NoteEditor() {
   const { noteId } = useParams<{ noteId: string }>();
   const navigate = useNavigate();
-  const { notes, updateNote, deleteNote, selectNote, createNote, getNoteBreadcrumbs } = useNotesStore();
+  const { notes, updateNote, deleteNote, selectNote, createNote, createSubPage, getNoteBreadcrumbs, getChildNotes, getParentNote } = useNotesStore();
 
   const note = getNoteById(notes, noteId || null);
 
@@ -110,6 +112,47 @@ export function NoteEditor() {
   const handleNavigateToLine = useCallback((lineIndex: number) => {
     editorRef.current?.navigateToLine(lineIndex);
   }, []);
+
+  // Sub-page navigation helpers
+  const childNotes = noteId ? getChildNotes(noteId) : [];
+  const parentNote = noteId ? getParentNote(noteId) : null;
+  const canCreateSubPageHere = noteId ? canNestSubPage(notes, noteId, 3) : false;
+
+  const handleCreateSubPage = useCallback(() => {
+    if (!noteId) return;
+    const newSubPage = createSubPage(noteId, 'Untitled Sub-page');
+    if (newSubPage) {
+      navigate(`/notes/${newSubPage.id}`);
+    }
+  }, [noteId, createSubPage, navigate]);
+
+  const handleNavigateToParent = useCallback(() => {
+    if (parentNote) {
+      navigate(`/notes/${parentNote.id}`);
+    }
+  }, [parentNote, navigate]);
+
+  // Keyboard shortcuts for navigation
+  useKeyboardShortcuts([
+    {
+      key: 'Escape',
+      handler: () => {
+        if (note?.isSubPage && parentNote) {
+          handleNavigateToParent();
+        }
+      },
+      preventDefault: false,
+    },
+    {
+      key: '[',
+      meta: true,
+      handler: () => {
+        if (note?.isSubPage && parentNote) {
+          handleNavigateToParent();
+        }
+      },
+    },
+  ]);
 
   // Handle case where note doesn't exist
   if (!note) {
@@ -230,16 +273,33 @@ export function NoteEditor() {
             rightSidebarOpen && 'mr-72'
           )}
         >
-          <EditorContent
-            ref={editorRef}
-            title={title}
-            content={content}
-            onTitleChange={handleTitleChange}
-            onContentChange={handleContentChange}
-            allNotes={notes.filter((n) => !n.isDeleted)}
-            currentNoteId={noteId || ''}
-            onCreateLinkedNote={handleCreateLinkedNote}
-          />
+          <div className="flex flex-col min-h-full">
+            <EditorContent
+              ref={editorRef}
+              title={title}
+              content={content}
+              onTitleChange={handleTitleChange}
+              onContentChange={handleContentChange}
+              allNotes={notes.filter((n) => !n.isDeleted)}
+              currentNoteId={noteId || ''}
+              onCreateLinkedNote={handleCreateLinkedNote}
+              onCreateSubPage={canCreateSubPageHere ? (subTitle) => {
+                const newSubPage = createSubPage(noteId!, subTitle);
+                if (newSubPage) {
+                  navigate(`/notes/${newSubPage.id}`);
+                }
+              } : undefined}
+            />
+
+            {/* Sub-pages Section */}
+            <div className="px-6 md:px-10 lg:px-16 pb-12">
+              <SubPagesSection
+                childNotes={childNotes}
+                onCreateSubPage={handleCreateSubPage}
+                canCreateSubPage={canCreateSubPageHere}
+              />
+            </div>
+          </div>
         </main>
 
         {/* Right Sidebar */}
@@ -254,6 +314,10 @@ export function NoteEditor() {
           createdAt={createdAtDate}
           updatedAt={updatedAtDate}
           wordCount={wordCount}
+          isSubPage={note.isSubPage}
+          parentTitle={parentNote?.title}
+          childCount={childNotes.length}
+          onNavigateToParent={handleNavigateToParent}
         />
       </div>
     </div>

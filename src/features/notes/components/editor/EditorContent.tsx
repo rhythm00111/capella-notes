@@ -13,6 +13,7 @@ interface EditorContentProps {
   allNotes: Note[];
   currentNoteId: string;
   onCreateLinkedNote: (title: string) => string;
+  onCreateSubPage?: (title: string) => void;
 }
 
 export interface EditorContentRef {
@@ -21,7 +22,7 @@ export interface EditorContentRef {
 
 export const EditorContent = forwardRef<EditorContentRef, EditorContentProps>(
   (
-    { title, content, onTitleChange, onContentChange, allNotes, currentNoteId, onCreateLinkedNote },
+    { title, content, onTitleChange, onContentChange, allNotes, currentNoteId, onCreateLinkedNote, onCreateSubPage },
     ref
   ) => {
     const [localContent, setLocalContent] = useState(content);
@@ -218,9 +219,12 @@ export const EditorContent = forwardRef<EditorContentRef, EditorContentProps>(
 
         switch (command.id) {
           case 'subpage':
-            // Sub-page is handled specially - insert a placeholder
-            insertText = '[[Page: Untitled Sub-page]]';
-            break;
+            // Create actual sub-page instead of inserting placeholder
+            if (onCreateSubPage) {
+              onCreateSubPage('Untitled Sub-page');
+            }
+            setSlashMenu((prev) => ({ ...prev, isOpen: false }));
+            return; // Early return - don't insert text
           case 'heading1':
             insertText = '# ';
             break;

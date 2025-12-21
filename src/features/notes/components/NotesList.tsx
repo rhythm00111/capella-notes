@@ -12,11 +12,11 @@ import { ALL_NOTES_FOLDER_ID } from '../types/folder';
 import { NoteCard } from './NoteCard';
 
 export function NotesList() {
-  const { notes, folders, activeFolderId, activeNoteId, searchQuery, selectNote, createNote } =
+  const { notes, folders, activeFolderId, activeNoteId, searchQuery, selectNote, createNote, showSubPages } =
     useNotesStore();
 
-  // Filter notes by folder
-  let filteredNotes = getNotesByFolder(notes, activeFolderId);
+  // Filter notes by folder (and sub-pages based on toggle)
+  let filteredNotes = getNotesByFolder(notes, activeFolderId, showSubPages);
 
   // Apply search filter
   filteredNotes = filterNotesBySearch(filteredNotes, searchQuery);
