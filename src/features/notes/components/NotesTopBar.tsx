@@ -1,24 +1,25 @@
-import { Plus, Search } from 'lucide-react';
+import { forwardRef } from 'react';
+import { Plus, Search, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useNotesStore } from '../store/useNotesStore';
 import { getFolderNoteCount } from '../lib/notesSelectors';
 
-export function NotesTopBar() {
+export const NotesTopBar = forwardRef<HTMLDivElement>(function NotesTopBar(_, ref) {
   const { folders, notes, activeFolderId, searchQuery, selectFolder, setSearchQuery, createNote } =
     useNotesStore();
 
   const noteCount = getFolderNoteCount(notes, activeFolderId);
+  const activeFolder = folders.find((f) => f.id === activeFolderId);
 
   return (
-    <div className="flex-shrink-0 border-b border-border p-4 space-y-3">
+    <div ref={ref} className="flex-shrink-0 border-b border-border p-4 space-y-3">
       {/* Title Row */}
       <div className="flex items-center justify-between">
         <div>
@@ -36,19 +37,26 @@ export function NotesTopBar() {
 
       {/* Controls Row */}
       <div className="flex items-center gap-3">
-        {/* Folder Selector */}
-        <Select value={activeFolderId} onValueChange={selectFolder}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select folder" />
-          </SelectTrigger>
-          <SelectContent>
+        {/* Folder Selector - Using DropdownMenu instead of Select to avoid ref issues */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="w-[180px] justify-between">
+              <span className="truncate">{activeFolder?.name || 'Select folder'}</span>
+              <ChevronDown className="h-4 w-4 opacity-50 ml-2 flex-shrink-0" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-[180px]">
             {folders.map((folder) => (
-              <SelectItem key={folder.id} value={folder.id}>
+              <DropdownMenuItem
+                key={folder.id}
+                onClick={() => selectFolder(folder.id)}
+                className={activeFolderId === folder.id ? 'bg-accent' : ''}
+              >
                 {folder.name}
-              </SelectItem>
+              </DropdownMenuItem>
             ))}
-          </SelectContent>
-        </Select>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Search */}
         <div className="relative flex-1">
@@ -64,4 +72,6 @@ export function NotesTopBar() {
       </div>
     </div>
   );
-}
+});
+
+NotesTopBar.displayName = 'NotesTopBar';
