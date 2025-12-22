@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Star, MoreHorizontal, Trash2, Check, Loader2, Keyboard, Sparkles } from 'lucide-react';
+import { ArrowLeft, Star, MoreHorizontal, Trash2, Check, Loader2, Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -149,17 +149,16 @@ export function EditorTopBar({
           )}
         </div>
 
-        {/* AI Summarize Button */}
+        {/* AI Summarize Button - Text only, no icon */}
         {onAISummarize && (
           <Button
             variant="ghost"
             size="sm"
             onClick={onAISummarize}
-            className="gap-2 text-muted-foreground hover:text-primary hidden sm:flex"
+            className="text-muted-foreground hover:text-primary hidden sm:flex"
             aria-label="AI Summarize"
           >
-            <Sparkles className="h-4 w-4" />
-            <span className="hidden md:inline">AI Summarize</span>
+            AI Summarize
           </Button>
         )}
 

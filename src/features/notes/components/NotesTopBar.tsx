@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Search, ChevronDown, Sparkles, X, LayoutGrid, List, SlidersHorizontal, Loader2 } from 'lucide-react';
+import { Plus, Search, ChevronDown, X, LayoutGrid, List, SlidersHorizontal } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,37 +50,26 @@ export function NotesTopBar() {
 
           {/* Right: Action Buttons */}
           <div className="flex items-center gap-2">
-            {/* AI Summarize Button - Premium Design */}
+            {/* AI Summarize Button - Simplified without icon */}
             <motion.button
               onClick={() => setShowAISummarize(true)}
               disabled={activeNotes.length === 0}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="group relative flex items-center gap-3 px-4 py-2.5 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 rounded-xl overflow-hidden transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 rounded-xl overflow-hidden transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {/* Hover Gradient Overlay */}
               <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               
               {/* Content */}
-              <div className="relative flex items-center gap-3">
-                {/* Icon Container */}
-                <div className="relative flex items-center justify-center">
-                  {/* Glow Effect */}
-                  <div className="absolute inset-0 bg-primary/30 rounded-lg blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  
-                  {/* Icon Background */}
-                  <div className="relative flex items-center justify-center w-7 h-7 bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg border border-primary/20 group-hover:border-primary/40 transition-all duration-300">
-                    <Sparkles className="h-4 w-4 text-primary group-hover:scale-110 transition-transform duration-300" />
-                  </div>
-                </div>
-                
+              <div className="relative flex items-center gap-2">
                 {/* Text */}
-                <span className="hidden sm:inline text-sm font-medium text-foreground/80 group-hover:text-foreground transition-colors duration-300">
+                <span className="text-sm font-medium text-foreground/80 group-hover:text-foreground transition-colors duration-300">
                   AI Summarize
                 </span>
                 
                 {/* Beta Badge */}
-                <span className="hidden md:inline px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-primary/20 text-primary rounded-md">
+                <span className="hidden sm:inline px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-primary/20 text-primary rounded-md">
                   Beta
                 </span>
               </div>

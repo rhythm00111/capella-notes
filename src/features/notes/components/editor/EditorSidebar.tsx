@@ -50,7 +50,8 @@ export function EditorSidebar({
           variant="ghost"
           size="icon"
           onClick={onToggle}
-          className="fixed left-4 top-20 z-40 btn-icon"
+          className="fixed left-4 z-40 btn-icon"
+          style={{ top: '80px' }} // Below top bar (64px + 16px margin)
         >
           <PanelLeft className="h-5 w-5" />
         </Button>
@@ -59,11 +60,12 @@ export function EditorSidebar({
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-16 bottom-0 z-30',
+          'fixed left-0 bottom-0 z-30',
           'bg-sidebar border-r border-border',
           'transition-all duration-250 ease-out',
           isOpen ? 'w-60' : 'w-0 overflow-hidden border-none'
         )}
+        style={{ top: '64px' }} // Start below the 64px top bar
       >
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-2 border-b border-border">
