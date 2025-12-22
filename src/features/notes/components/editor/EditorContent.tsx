@@ -1,9 +1,11 @@
 import { useState, useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { Plus } from 'lucide-react';
 import { SlashCommandMenu } from './SlashCommandMenu';
 import type { SlashCommand } from './SlashCommandMenu';
 import { FloatingFormatBar } from './FloatingFormatBar';
 import { NoteLinkMenu } from './NoteLinkMenu';
 import { Note } from '../../types/note';
+import { cn } from '@/lib/utils';
 
 interface EditorContentProps {
   title: string;
@@ -50,6 +52,13 @@ export const EditorContent = forwardRef<EditorContentRef, EditorContentProps>(
       startIndex: 0,
     });
 
+    // State for inline + button
+    const [emptyLineInfo, setEmptyLineInfo] = useState<{
+      show: boolean;
+      top: number;
+      lineStart: number;
+    }>({ show: false, top: 0, lineStart: 0 });
+
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const titleRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -87,6 +96,64 @@ export const EditorContent = forwardRef<EditorContentRef, EditorContentProps>(
         textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
       }
     }, [localContent]);
+
+    // Check if cursor is on an empty line and show + button
+    const checkEmptyLine = useCallback(() => {
+      const textarea = textareaRef.current;
+      if (!textarea || !onCreateSubPage) {
+        setEmptyLineInfo({ show: false, top: 0, lineStart: 0 });
+        return;
+      }
+
+      const cursorPos = textarea.selectionStart;
+      const selectionEnd = textarea.selectionEnd;
+
+      // Don't show if there's a selection
+      if (cursorPos !== selectionEnd) {
+        setEmptyLineInfo({ show: false, top: 0, lineStart: 0 });
+        return;
+      }
+
+      const value = localContent;
+      
+      // Find line boundaries
+      const lineStart = value.lastIndexOf('\n', cursorPos - 1) + 1;
+      const lineEnd = value.indexOf('\n', cursorPos);
+      const actualLineEnd = lineEnd === -1 ? value.length : lineEnd;
+      
+      const currentLine = value.substring(lineStart, actualLineEnd);
+      
+      // Check if line is empty (only whitespace)
+      if (currentLine.trim() === '') {
+        const { top } = getCaretCoordinates(textarea, lineStart);
+        setEmptyLineInfo({
+          show: true,
+          top: top,
+          lineStart: lineStart,
+        });
+      } else {
+        setEmptyLineInfo({ show: false, top: 0, lineStart: 0 });
+      }
+    }, [localContent, onCreateSubPage]);
+
+    // Handle cursor position changes
+    const handleSelectionChange = useCallback(() => {
+      checkEmptyLine();
+    }, [checkEmptyLine]);
+
+    useEffect(() => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      // Listen for selection changes
+      textarea.addEventListener('click', handleSelectionChange);
+      textarea.addEventListener('keyup', handleSelectionChange);
+
+      return () => {
+        textarea.removeEventListener('click', handleSelectionChange);
+        textarea.removeEventListener('keyup', handleSelectionChange);
+      };
+    }, [handleSelectionChange]);
 
     // Handle content change with slash command and [[link]] detection
     const handleContentChange = useCallback(
@@ -405,6 +472,17 @@ export const EditorContent = forwardRef<EditorContentRef, EditorContentProps>(
       }
     };
 
+    // Handle + button click for sub-page creation
+    const handlePlusClick = useCallback(() => {
+      if (!onCreateSubPage) return;
+      
+      // Hide the + button
+      setEmptyLineInfo({ show: false, top: 0, lineStart: 0 });
+      
+      // Create sub-page
+      onCreateSubPage('Untitled Sub-page');
+    }, [onCreateSubPage]);
+
     return (
       <div ref={containerRef} className="editor-container">
         {/* Title */}
@@ -451,6 +529,31 @@ export const EditorContent = forwardRef<EditorContentRef, EditorContentProps>(
 
         {/* Floating Format Bar */}
         <FloatingFormatBar containerRef={containerRef} onFormat={handleFormat} />
+
+        {/* Inline + Button for empty lines */}
+        {emptyLineInfo.show && onCreateSubPage && (
+          <button
+            onClick={handlePlusClick}
+            className={cn(
+              'fixed z-50 w-6 h-6 flex items-center justify-center',
+              'rounded-md border border-border bg-card/90 backdrop-blur-sm',
+              'text-muted-foreground hover:text-primary hover:border-primary/50',
+              'transition-all duration-150 hover:scale-110',
+              'shadow-sm hover:shadow-md',
+              'group'
+            )}
+            style={{
+              top: emptyLineInfo.top - 4,
+              left: containerRef.current 
+                ? containerRef.current.getBoundingClientRect().left - 32 
+                : 0,
+            }}
+            title="Create sub-page"
+            aria-label="Create sub-page"
+          >
+            <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-200" />
+          </button>
+        )}
       </div>
     );
   }

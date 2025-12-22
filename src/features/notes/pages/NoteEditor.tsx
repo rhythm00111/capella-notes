@@ -8,7 +8,6 @@ import { EditorContent, EditorContentRef } from '../components/editor/EditorCont
 import { EditorSidebar } from '../components/editor/EditorSidebar';
 import { RightSidebar } from '../components/editor/RightSidebar';
 import { Breadcrumb } from '../components/Breadcrumb';
-import { SubPagesSection } from '../components/editor/SubPagesSection';
 import { AISummaryCard } from '../components/AISummaryCard';
 import { AISummarizeModal } from '../components/AISummarizeModal';
 import { NoteVersion } from '../components/editor/VersionHistoryPanel';
@@ -16,7 +15,6 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { generateId } from '../lib/notesHelpers';
 import { AUTO_SAVE_DELAY } from '../lib/notesConstants';
-import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 export function NoteEditor() {
   const { noteId } = useParams<{ noteId: string }>();
@@ -126,13 +124,6 @@ export function NoteEditor() {
   const parentNote = noteId ? getParentNote(noteId) : null;
   const canCreateSubPageHere = noteId ? canNestSubPage(notes, noteId, 3) : false;
 
-  const handleCreateSubPage = useCallback(() => {
-    if (!noteId) return;
-    const newSubPage = createSubPage(noteId, 'Untitled Sub-page');
-    if (newSubPage) {
-      navigate(`/notes/${newSubPage.id}`);
-    }
-  }, [noteId, createSubPage, navigate]);
 
   const handleNavigateToParent = useCallback(() => {
     if (parentNote) {
@@ -140,27 +131,21 @@ export function NoteEditor() {
     }
   }, [parentNote, navigate]);
 
-  // Keyboard shortcuts for navigation
-  useKeyboardShortcuts([
-    {
-      key: 'Escape',
-      handler: () => {
+  // Keyboard shortcuts for navigation using native event handler
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl + [ to go to parent
+      if ((e.metaKey || e.ctrlKey) && e.key === '[') {
         if (note?.isSubPage && parentNote) {
+          e.preventDefault();
           handleNavigateToParent();
         }
-      },
-      preventDefault: false,
-    },
-    {
-      key: '[',
-      meta: true,
-      handler: () => {
-        if (note?.isSubPage && parentNote) {
-          handleNavigateToParent();
-        }
-      },
-    },
-  ]);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [note?.isSubPage, parentNote, handleNavigateToParent]);
 
   // Handle case where note doesn't exist
   if (!note) {
@@ -304,14 +289,6 @@ export function NoteEditor() {
               } : undefined}
             />
 
-            {/* Sub-pages Section */}
-            <div className="px-6 md:px-10 lg:px-16 pb-12">
-              <SubPagesSection
-                childNotes={childNotes}
-                onCreateSubPage={handleCreateSubPage}
-                canCreateSubPage={canCreateSubPageHere}
-              />
-            </div>
           </div>
         </main>
 
