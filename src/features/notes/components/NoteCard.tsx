@@ -1,5 +1,5 @@
-import { forwardRef } from 'react';
-import { Clock, Pin, FileText } from 'lucide-react';
+import { forwardRef, useState } from 'react';
+import { Clock, Pin, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Note, TAG_COLORS } from '../types/note';
 import { getPreview, formatRelativeDate } from '../lib/notesHelpers';
@@ -14,6 +14,7 @@ interface NoteCardProps {
 
 export const NoteCard = forwardRef<HTMLDivElement, NoteCardProps>(
   ({ note, isSelected, folderName, onClick }, ref) => {
+    const [isExpanded, setIsExpanded] = useState(false);
     const preview = getPreview(note.content);
     const formattedDate = formatRelativeDate(note.updatedAt);
     const getChildNotes = useNotesStore((state) => state.getChildNotes);
@@ -23,17 +24,34 @@ export const NoteCard = forwardRef<HTMLDivElement, NoteCardProps>(
     
     // Get color-coded tags from the note
     const tags = note.tags || [];
+    
+    // Check if there's expandable content
+    const hasExpandableContent = tags.length > 0 || subPages.length > 0;
+
+    const handleRightClick = (e: React.MouseEvent) => {
+      if (hasExpandableContent) {
+        e.preventDefault();
+        setIsExpanded(!isExpanded);
+      }
+    };
+
+    const handleExpandClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setIsExpanded(!isExpanded);
+    };
 
     return (
       <div
         ref={ref}
         onClick={onClick}
+        onContextMenu={handleRightClick}
         className={cn(
           'group cursor-pointer p-4 rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm',
           'hover:border-[#063f47]/40 hover:bg-card hover:shadow-lg hover:shadow-[#063f47]/5',
           'transition-all duration-300 ease-out',
           'active:scale-[0.99]',
-          isSelected && 'border-[#063f47]/60 bg-card shadow-md ring-1 ring-[#063f47]/20'
+          isSelected && 'border-[#063f47]/60 bg-card shadow-md ring-1 ring-[#063f47]/20',
+          isExpanded && 'ring-1 ring-[#063f47]/30'
         )}
         role="button"
         tabIndex={0}
@@ -57,56 +75,77 @@ export const NoteCard = forwardRef<HTMLDivElement, NoteCardProps>(
           </p>
         )}
 
-        {/* Color-coded Tags Section */}
-        {tags.length > 0 && (
-          <div className="mt-3 flex items-center gap-1.5 flex-wrap">
-            {tags.slice(0, 4).map((tag) => {
-              const colors = TAG_COLORS[tag.color];
-              return (
-                <span
-                  key={tag.id}
-                  className={cn(
-                    'inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium border',
-                    colors.bg,
-                    colors.text,
-                    colors.border
-                  )}
-                >
-                  {tag.name}
-                </span>
-              );
-            })}
-            {tags.length > 4 && (
-              <span className="text-[10px] text-muted-foreground/60">
-                +{tags.length - 4}
+        {/* Expandable Content Indicator */}
+        {hasExpandableContent && !isExpanded && (
+          <div className="mt-3 flex items-center gap-2">
+            <button
+              onClick={handleExpandClick}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+            >
+              <ChevronDown className="h-3 w-3" />
+              <span>
+                {tags.length > 0 && `${tags.length} tag${tags.length > 1 ? 's' : ''}`}
+                {tags.length > 0 && subPages.length > 0 && ' · '}
+                {subPages.length > 0 && `${subPages.length} sub-page${subPages.length > 1 ? 's' : ''}`}
               </span>
-            )}
+            </button>
           </div>
         )}
 
-        {/* Sub-pages Section */}
-        {subPages.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-border/50">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
-              <FileText className="h-3 w-3" />
-              <span className="font-medium">{subPages.length} sub-page{subPages.length > 1 ? 's' : ''}</span>
-            </div>
-            <div className="space-y-1">
-              {subPages.slice(0, 2).map((subPage) => (
-                <div
-                  key={subPage.id}
-                  className="flex items-center gap-2 text-xs text-muted-foreground/70 pl-4 py-1 rounded hover:bg-muted/50 transition-colors"
-                >
-                  <div className="w-1 h-1 rounded-full bg-[#063f47]/40" />
-                  <span className="truncate">{subPage.title || 'Untitled'}</span>
+        {/* Expanded Content - Tags & Sub-pages */}
+        {isExpanded && hasExpandableContent && (
+          <div className="mt-3 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+            {/* Collapse Button */}
+            <button
+              onClick={handleExpandClick}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+            >
+              <ChevronUp className="h-3 w-3" />
+              <span>Collapse</span>
+            </button>
+
+            {/* Color-coded Tags Section */}
+            {tags.length > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {tags.map((tag) => {
+                  const colors = TAG_COLORS[tag.color];
+                  return (
+                    <span
+                      key={tag.id}
+                      className={cn(
+                        'inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium border',
+                        colors.bg,
+                        colors.text,
+                        colors.border
+                      )}
+                    >
+                      {tag.name}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Sub-pages Section */}
+            {subPages.length > 0 && (
+              <div className="pt-2 border-t border-border/50">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
+                  <FileText className="h-3 w-3" />
+                  <span className="font-medium">{subPages.length} sub-page{subPages.length > 1 ? 's' : ''}</span>
                 </div>
-              ))}
-              {subPages.length > 2 && (
-                <span className="text-[10px] text-muted-foreground/50 pl-4">
-                  +{subPages.length - 2} more
-                </span>
-              )}
-            </div>
+                <div className="space-y-1">
+                  {subPages.map((subPage) => (
+                    <div
+                      key={subPage.id}
+                      className="flex items-center gap-2 text-xs text-muted-foreground/70 pl-4 py-1 rounded hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="w-1 h-1 rounded-full bg-[#063f47]/40" />
+                      <span className="truncate">{subPage.title || 'Untitled'}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
