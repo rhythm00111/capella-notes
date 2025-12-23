@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { Plus, Heading2, FileText } from 'lucide-react';
+import { Plus, Heading1, Heading2, Heading3, CheckSquare, ListOrdered, Table, FileText, GripVertical } from 'lucide-react';
 import { SlashCommandMenu } from './SlashCommandMenu';
 import type { SlashCommand } from './SlashCommandMenu';
 import { FloatingFormatBar } from './FloatingFormatBar';
@@ -482,8 +482,8 @@ export const EditorContent = forwardRef<EditorContentRef, EditorContentProps>(
       setPlusMenuOpen(true);
     }, []);
 
-    // Handle sub-heading insertion
-    const handleInsertSubheading = useCallback(() => {
+    // Generic markdown insertion handler
+    const handleInsertMarkdown = useCallback((markdownText: string) => {
       const textarea = textareaRef.current;
       if (!textarea) return;
 
@@ -491,21 +491,31 @@ export const EditorContent = forwardRef<EditorContentRef, EditorContentProps>(
       const beforeCursor = localContent.substring(0, cursorPos);
       const afterCursor = localContent.substring(cursorPos);
 
-      const headingText = '## ';
-      const newContent = beforeCursor + headingText + afterCursor;
+      const newContent = beforeCursor + markdownText + afterCursor;
 
       setLocalContent(newContent);
       onContentChange(newContent);
       setPlusMenuOpen(false);
       setEmptyLineInfo({ show: false, top: 0, lineStart: 0 });
 
-      // Focus and place cursor after heading markers
+      // Focus and place cursor after the markdown prefix
       setTimeout(() => {
         textarea.focus();
-        const newCursorPos = cursorPos + headingText.length;
+        const newCursorPos = cursorPos + markdownText.length;
         textarea.setSelectionRange(newCursorPos, newCursorPos);
       }, 0);
     }, [localContent, emptyLineInfo.lineStart, onContentChange]);
+
+    // Block insertion handlers
+    const handleInsertHeading1 = useCallback(() => handleInsertMarkdown('# '), [handleInsertMarkdown]);
+    const handleInsertHeading2 = useCallback(() => handleInsertMarkdown('## '), [handleInsertMarkdown]);
+    const handleInsertHeading3 = useCallback(() => handleInsertMarkdown('### '), [handleInsertMarkdown]);
+    const handleInsertTodo = useCallback(() => handleInsertMarkdown('- [ ] '), [handleInsertMarkdown]);
+    const handleInsertNumberedList = useCallback(() => handleInsertMarkdown('1. '), [handleInsertMarkdown]);
+    const handleInsertTable = useCallback(() => {
+      const tableMarkdown = '| Column 1 | Column 2 |\n|----------|----------|\n|          |          |\n';
+      handleInsertMarkdown(tableMarkdown);
+    }, [handleInsertMarkdown]);
 
     // Handle sub-page creation
     const handleCreateSubPageOption = useCallback(() => {
@@ -600,14 +610,37 @@ export const EditorContent = forwardRef<EditorContentRef, EditorContentProps>(
         {/* Inline + Button for empty lines */}
         {emptyLineInfo.show && onCreateSubPage && (
           <div
-            className="fixed z-50"
+            className="fixed z-50 flex items-center gap-0.5 group/block"
             style={{
               top: emptyLineInfo.top,
               left: containerRef.current 
-                ? containerRef.current.getBoundingClientRect().left - 28 
+                ? containerRef.current.getBoundingClientRect().left - 44 
                 : 0,
             }}
           >
+            {/* 6-dot handle (Notion-style, non-functional) */}
+            <div
+              className={cn(
+                'w-4 h-6 flex flex-col items-center justify-center gap-[2px]',
+                'opacity-0 group-hover/block:opacity-30 hover:!opacity-50',
+                'transition-opacity duration-150 cursor-default'
+              )}
+              title="Drag to move (coming soon)"
+            >
+              <div className="flex gap-[2px]">
+                <div className="w-[3px] h-[3px] rounded-full bg-muted-foreground" />
+                <div className="w-[3px] h-[3px] rounded-full bg-muted-foreground" />
+              </div>
+              <div className="flex gap-[2px]">
+                <div className="w-[3px] h-[3px] rounded-full bg-muted-foreground" />
+                <div className="w-[3px] h-[3px] rounded-full bg-muted-foreground" />
+              </div>
+              <div className="flex gap-[2px]">
+                <div className="w-[3px] h-[3px] rounded-full bg-muted-foreground" />
+                <div className="w-[3px] h-[3px] rounded-full bg-muted-foreground" />
+              </div>
+            </div>
+
             {/* Plus button - minimal, no background */}
             <button
               onClick={handlePlusClick}
@@ -627,28 +660,102 @@ export const EditorContent = forwardRef<EditorContentRef, EditorContentProps>(
             {plusMenuOpen && (
               <div 
                 className={cn(
-                  'absolute left-0 top-6 z-50',
-                  'flex flex-col py-1 min-w-[140px]',
+                  'absolute left-5 top-7 z-50',
+                  'flex flex-col py-1.5 min-w-[160px]',
                   'bg-popover border border-border rounded-lg shadow-lg',
                   'animate-in fade-in-0 zoom-in-95 duration-100'
                 )}
                 onClick={(e) => e.stopPropagation()}
               >
+                {/* Heading 1 */}
                 <button
-                  onClick={handleInsertSubheading}
+                  onClick={handleInsertHeading1}
                   className={cn(
-                    'flex items-center gap-2 px-3 py-2 text-sm text-left',
+                    'flex items-center gap-2.5 px-3 py-1.5 text-sm text-left',
+                    'text-foreground/80 hover:text-foreground hover:bg-muted/50',
+                    'transition-colors duration-100'
+                  )}
+                >
+                  <Heading1 className="w-4 h-4 text-muted-foreground" />
+                  <span>Heading 1</span>
+                </button>
+
+                {/* Heading 2 */}
+                <button
+                  onClick={handleInsertHeading2}
+                  className={cn(
+                    'flex items-center gap-2.5 px-3 py-1.5 text-sm text-left',
                     'text-foreground/80 hover:text-foreground hover:bg-muted/50',
                     'transition-colors duration-100'
                   )}
                 >
                   <Heading2 className="w-4 h-4 text-muted-foreground" />
-                  <span>Sub-heading</span>
+                  <span>Heading 2</span>
                 </button>
+
+                {/* Heading 3 */}
+                <button
+                  onClick={handleInsertHeading3}
+                  className={cn(
+                    'flex items-center gap-2.5 px-3 py-1.5 text-sm text-left',
+                    'text-foreground/80 hover:text-foreground hover:bg-muted/50',
+                    'transition-colors duration-100'
+                  )}
+                >
+                  <Heading3 className="w-4 h-4 text-muted-foreground" />
+                  <span>Heading 3</span>
+                </button>
+
+                {/* Separator */}
+                <div className="h-px bg-border my-1 mx-2" />
+
+                {/* To-Do List */}
+                <button
+                  onClick={handleInsertTodo}
+                  className={cn(
+                    'flex items-center gap-2.5 px-3 py-1.5 text-sm text-left',
+                    'text-foreground/80 hover:text-foreground hover:bg-muted/50',
+                    'transition-colors duration-100'
+                  )}
+                >
+                  <CheckSquare className="w-4 h-4 text-muted-foreground" />
+                  <span>To-Do List</span>
+                </button>
+
+                {/* Numbered List */}
+                <button
+                  onClick={handleInsertNumberedList}
+                  className={cn(
+                    'flex items-center gap-2.5 px-3 py-1.5 text-sm text-left',
+                    'text-foreground/80 hover:text-foreground hover:bg-muted/50',
+                    'transition-colors duration-100'
+                  )}
+                >
+                  <ListOrdered className="w-4 h-4 text-muted-foreground" />
+                  <span>Numbered List</span>
+                </button>
+
+                {/* Table */}
+                <button
+                  onClick={handleInsertTable}
+                  className={cn(
+                    'flex items-center gap-2.5 px-3 py-1.5 text-sm text-left',
+                    'text-foreground/80 hover:text-foreground hover:bg-muted/50',
+                    'transition-colors duration-100'
+                  )}
+                >
+                  <Table className="w-4 h-4 text-muted-foreground" />
+                  <span>Table</span>
+                </button>
+
+                {/* Separator */}
+                <div className="h-px bg-border my-1 mx-2" />
+
+                {/* Sub-page */}
                 <button
                   onClick={handleCreateSubPageOption}
                   className={cn(
-                    'flex items-center gap-2 px-3 py-2 text-sm text-left',
+                    'flex items-center gap-2.5 px-3 py-1.5 text-sm text-left',
                     'text-foreground/80 hover:text-foreground hover:bg-muted/50',
                     'transition-colors duration-100'
                   )}
