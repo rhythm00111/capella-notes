@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Star, MoreHorizontal, Trash2, Check, Loader2, Keyboard } from 'lucide-react';
+import { ArrowLeft, Star, MoreHorizontal, Trash2, Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -21,7 +21,6 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
-import { SaveIndicator, SaveStatus } from './SaveIndicator';
 import { KeyboardShortcutsHelp } from '../KeyboardShortcutsHelp';
 import { useNotesStore } from '../../store/useNotesStore';
 
@@ -133,22 +132,6 @@ export function EditorTopBar({
 
       {/* Right Section */}
       <div className="flex items-center gap-2">
-        {/* Save Status - Enhanced */}
-        <SaveIndicator 
-          status={isSaving ? 'saving' : 'saved'} 
-          lastSaved={lastSaved}
-          className="hidden sm:flex"
-        />
-        
-        {/* Mobile save indicator */}
-        <div className="flex items-center gap-1 sm:hidden">
-          {isSaving ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-          ) : (
-            <Check className="h-3.5 w-3.5 text-emerald-500" />
-          )}
-        </div>
-
         {/* AI Summarize Button - Text only, no icon */}
         {onAISummarize && (
           <Button

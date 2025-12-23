@@ -505,3 +505,36 @@
 *::-webkit-scrollbar-thumb:hover {
   background: rgba(6, 63, 71, 0.4);
 }
+
+/* Notion-style ultra-thin scrollbar for editor */
+.notion-scrollbar {
+  scrollbar-width: none; /* Firefox - hide by default */
+}
+
+.notion-scrollbar::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+}
+
+.notion-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notion-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 1px;
+  transition: background 0.2s ease;
+}
+
+.notion-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.15);
+}
+
+.notion-scrollbar:hover {
+  scrollbar-width: thin; /* Firefox - show on hover */
+  scrollbar-color: hsl(var(--muted-foreground) / 0.15) transparent;
+}
+
+.notion-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.25);
+}
