@@ -28,13 +28,6 @@ export const NoteCard = forwardRef<HTMLDivElement, NoteCardProps>(
     // Check if there's expandable content
     const hasExpandableContent = tags.length > 0 || subPages.length > 0;
 
-    const handleRightClick = (e: React.MouseEvent) => {
-      if (hasExpandableContent) {
-        e.preventDefault();
-        setIsExpanded(!isExpanded);
-      }
-    };
-
     const handleExpandClick = (e: React.MouseEvent) => {
       e.stopPropagation();
       setIsExpanded(!isExpanded);
@@ -44,7 +37,6 @@ export const NoteCard = forwardRef<HTMLDivElement, NoteCardProps>(
       <div
         ref={ref}
         onClick={onClick}
-        onContextMenu={handleRightClick}
         className={cn(
           'group cursor-pointer p-4 rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm',
           'hover:border-[#063f47]/40 hover:bg-card hover:shadow-lg hover:shadow-[#063f47]/5',
