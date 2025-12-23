@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
-import { Clock, Pin, FileText, Tag } from 'lucide-react';
+import { Clock, Pin, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Note } from '../types/note';
+import { Note, TAG_COLORS } from '../types/note';
 import { getPreview, formatRelativeDate } from '../lib/notesHelpers';
 import { useNotesStore } from '../store/useNotesStore';
 
@@ -21,15 +21,8 @@ export const NoteCard = forwardRef<HTMLDivElement, NoteCardProps>(
     // Get sub-pages for this note
     const subPages = getChildNotes(note.id);
     
-    // Extract tags from content (simple #tag pattern)
-    const extractTags = (content: string): string[] => {
-      const tagPattern = /#(\w+)/g;
-      const matches = content.match(tagPattern);
-      if (!matches) return [];
-      return [...new Set(matches.slice(0, 3))]; // Limit to 3 unique tags
-    };
-    
-    const tags = extractTags(note.content);
+    // Get color-coded tags from the note
+    const tags = note.tags || [];
 
     return (
       <div
@@ -64,18 +57,30 @@ export const NoteCard = forwardRef<HTMLDivElement, NoteCardProps>(
           </p>
         )}
 
-        {/* Tags Section */}
+        {/* Color-coded Tags Section */}
         {tags.length > 0 && (
           <div className="mt-3 flex items-center gap-1.5 flex-wrap">
-            {tags.map((tag, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-[#063f47]/10 text-[#063f47] border border-[#063f47]/20"
-              >
-                <Tag className="h-2.5 w-2.5" />
-                {tag.replace('#', '')}
+            {tags.slice(0, 4).map((tag) => {
+              const colors = TAG_COLORS[tag.color];
+              return (
+                <span
+                  key={tag.id}
+                  className={cn(
+                    'inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium border',
+                    colors.bg,
+                    colors.text,
+                    colors.border
+                  )}
+                >
+                  {tag.name}
+                </span>
+              );
+            })}
+            {tags.length > 4 && (
+              <span className="text-[10px] text-muted-foreground/60">
+                +{tags.length - 4}
               </span>
-            ))}
+            )}
           </div>
         )}
 
