@@ -10,10 +10,7 @@ import { RightSidebar } from '../components/editor/RightSidebar';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { AISummaryCard } from '../components/AISummaryCard';
 import { AISummarizeModal } from '../components/AISummarizeModal';
-import { EditorTagRow } from '../components/editor/EditorTagRow';
-import { TagPicker } from '../components/TagPicker';
 import { NoteVersion } from '../components/editor/VersionHistoryPanel';
-import { NoteTag } from '../types/note';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { generateId } from '../lib/notesHelpers';
@@ -22,10 +19,9 @@ import { AUTO_SAVE_DELAY } from '../lib/notesConstants';
 export function NoteEditor() {
   const { noteId } = useParams<{ noteId: string }>();
   const navigate = useNavigate();
-  const { notes, updateNote, deleteNote, selectNote, createNote, createSubPage, getNoteBreadcrumbs, getChildNotes, getParentNote, getAllTags } = useNotesStore();
+  const { notes, updateNote, deleteNote, selectNote, createNote, createSubPage, getNoteBreadcrumbs, getChildNotes, getParentNote } = useNotesStore();
 
   const note = getNoteById(notes, noteId || null);
-  const availableTags = getAllTags();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -110,12 +106,6 @@ export function NoteEditor() {
       updateNote(noteId, { isPinned: !note.isPinned });
     }
   };
-
-  const handleTagsChange = useCallback((newTags: NoteTag[]) => {
-    if (noteId) {
-      updateNote(noteId, { tags: newTags });
-    }
-  }, [noteId, updateNote]);
 
   const handleCreateLinkedNote = useCallback(
     (newTitle: string): string => {
@@ -249,9 +239,6 @@ export function NoteEditor() {
         onToggleFavorite={handleTogglePinned}
         lastSaved={lastSaved}
         onAISummarize={() => setShowAISummarize(true)}
-        tags={note.tags || []}
-        onTagsChange={handleTagsChange}
-        availableTags={availableTags}
       />
 
       {/* Main Layout: Sidebar + Content */}
@@ -275,17 +262,10 @@ export function NoteEditor() {
             rightSidebarOpen && 'mr-72'
           )}
         >
-          {/* Sub-page Header (Breadcrumbs + Tags) - Inside Main Content */}
+          {/* Sub-page Header (Breadcrumbs) - Inside Main Content */}
           {showBreadcrumbs && (
             <div className="flex-shrink-0 px-6 md:px-10 lg:px-16 pt-4 pb-2 border-b border-border/30">
               <Breadcrumb items={breadcrumbs} onNavigate={handleBreadcrumbNavigate} />
-            </div>
-          )}
-
-          {/* Tag Row - Inside Main Content */}
-          {(note.tags?.length ?? 0) > 0 && (
-            <div className="flex-shrink-0 px-6 md:px-10 lg:px-16 pt-3">
-              <EditorTagRow tags={note.tags || []} />
             </div>
           )}
 
@@ -295,15 +275,6 @@ export function NoteEditor() {
               {/* AI Summary Card */}
               <div className="px-6 md:px-10 lg:px-16 pt-6">
                 <AISummaryCard content={content} noteId={noteId || ''} />
-              </div>
-              
-              {/* Tag Picker (for editing tags) */}
-              <div className="px-6 md:px-10 lg:px-16 pt-2" data-tag-picker>
-                <TagPicker 
-                  tags={note.tags || []} 
-                  onTagsChange={handleTagsChange}
-                  availableTags={availableTags}
-                />
               </div>
               
               <EditorContent
