@@ -474,3 +474,27 @@
   .z-loading { z-index: 70; }
   .z-emergency { z-index: 100; }
 }
+
+/* Premium scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(6, 63, 71, 0.2) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(6, 63, 71, 0.2);
+  border-radius: 2px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 63, 71, 0.4);
+}
