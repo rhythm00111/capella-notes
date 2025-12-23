@@ -612,7 +612,7 @@ export const EditorContent = forwardRef<EditorContentRef, EditorContentProps>(
             <button
               onClick={handlePlusClick}
               className={cn(
-                'w-5 h-5 flex items-center justify-center',
+                'w-6 h-6 flex items-center justify-center',
                 'text-muted-foreground/30 hover:text-muted-foreground/70',
                 'transition-colors duration-150',
                 plusMenuOpen && 'text-muted-foreground/70'
@@ -620,7 +620,7 @@ export const EditorContent = forwardRef<EditorContentRef, EditorContentProps>(
               title="Add block"
               aria-label="Add block"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-5 h-5" />
             </button>
 
             {/* Inline menu */}
