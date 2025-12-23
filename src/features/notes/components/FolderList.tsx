@@ -66,7 +66,7 @@ export function FolderList() {
   if (isFolderPanelCollapsed) {
     return (
       <TooltipProvider delayDuration={100}>
-        <div className="flex flex-col h-full w-[60px] border-r border-border bg-sidebar transition-all duration-200">
+        <div className="flex flex-col h-full w-[52px] border-r border-border bg-sidebar transition-all duration-200">
           {/* Expand Button */}
           <div className="p-2 border-b border-border">
             <Tooltip>
