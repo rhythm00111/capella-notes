@@ -239,6 +239,7 @@ export function NoteEditor() {
 
   return (
     <div className="flex h-screen w-full flex-col bg-background">
+      {/* Global Top Bar - Full Width */}
       <EditorTopBar
         title={title}
         onTitleChange={handleTitleChange}
@@ -253,19 +254,8 @@ export function NoteEditor() {
         availableTags={availableTags}
       />
 
-      {/* Breadcrumb Navigation for Sub-pages */}
-      {showBreadcrumbs && (
-        <div className="px-6 md:px-10 pt-4">
-          <Breadcrumb items={breadcrumbs} onNavigate={handleBreadcrumbNavigate} />
-        </div>
-      )}
-
-      {/* Tag Row - minimal inline display (no add button, moved to top bar) */}
-      <div className="px-6 md:px-10 lg:px-16 pt-3">
-        <EditorTagRow tags={note.tags || []} />
-      </div>
-
-      <div className="flex-1 flex overflow-hidden">
+      {/* Main Layout: Sidebar + Content */}
+      <div className="flex-1 flex overflow-hidden relative">
         {/* Left Sidebar */}
         <EditorSidebar
           isOpen={leftSidebarOpen}
@@ -277,46 +267,63 @@ export function NoteEditor() {
           onNavigateToLine={handleNavigateToLine}
         />
 
-        {/* Main Editor */}
+        {/* Main Content Column */}
         <main
           className={cn(
-            'flex-1 overflow-auto notion-scrollbar transition-all duration-250',
+            'flex-1 flex flex-col overflow-hidden transition-all duration-250',
             leftSidebarOpen && 'ml-60',
             rightSidebarOpen && 'mr-72'
           )}
         >
-          <div className="flex flex-col min-h-full">
-            {/* AI Summary Card */}
-            <div className="px-6 md:px-10 lg:px-16 pt-6">
-              <AISummaryCard content={content} noteId={noteId || ''} />
+          {/* Sub-page Header (Breadcrumbs + Tags) - Inside Main Content */}
+          {showBreadcrumbs && (
+            <div className="flex-shrink-0 px-6 md:px-10 lg:px-16 pt-4 pb-2 border-b border-border/30">
+              <Breadcrumb items={breadcrumbs} onNavigate={handleBreadcrumbNavigate} />
             </div>
-            
-            {/* Tag Picker (hidden below main content for editing) */}
-            <div className="px-6 md:px-10 lg:px-16 pt-2" data-tag-picker>
-              <TagPicker 
-                tags={note.tags || []} 
-                onTagsChange={handleTagsChange}
-                availableTags={availableTags}
-              />
-            </div>
-            
-            <EditorContent
-              ref={editorRef}
-              title={title}
-              content={content}
-              onTitleChange={handleTitleChange}
-              onContentChange={handleContentChange}
-              allNotes={notes.filter((n) => !n.isDeleted)}
-              currentNoteId={noteId || ''}
-              onCreateLinkedNote={handleCreateLinkedNote}
-              onCreateSubPage={canCreateSubPageHere ? (subTitle) => {
-                const newSubPage = createSubPage(noteId!, subTitle);
-                if (newSubPage) {
-                  navigate(`/notes/${newSubPage.id}`);
-                }
-              } : undefined}
-            />
+          )}
 
+          {/* Tag Row - Inside Main Content */}
+          {(note.tags?.length ?? 0) > 0 && (
+            <div className="flex-shrink-0 px-6 md:px-10 lg:px-16 pt-3">
+              <EditorTagRow tags={note.tags || []} />
+            </div>
+          )}
+
+          {/* Scrollable Editor Area */}
+          <div className="flex-1 overflow-auto notion-scrollbar">
+            <div className="flex flex-col min-h-full">
+              {/* AI Summary Card */}
+              <div className="px-6 md:px-10 lg:px-16 pt-6">
+                <AISummaryCard content={content} noteId={noteId || ''} />
+              </div>
+              
+              {/* Tag Picker (for editing tags) */}
+              <div className="px-6 md:px-10 lg:px-16 pt-2" data-tag-picker>
+                <TagPicker 
+                  tags={note.tags || []} 
+                  onTagsChange={handleTagsChange}
+                  availableTags={availableTags}
+                />
+              </div>
+              
+              <EditorContent
+                ref={editorRef}
+                title={title}
+                content={content}
+                onTitleChange={handleTitleChange}
+                onContentChange={handleContentChange}
+                allNotes={notes.filter((n) => !n.isDeleted)}
+                currentNoteId={noteId || ''}
+                onCreateLinkedNote={handleCreateLinkedNote}
+                onCreateSubPage={canCreateSubPageHere ? (subTitle) => {
+                  const newSubPage = createSubPage(noteId!, subTitle);
+                  if (newSubPage) {
+                    navigate(`/notes/${newSubPage.id}`);
+                  }
+                } : undefined}
+              />
+
+            </div>
           </div>
         </main>
 
