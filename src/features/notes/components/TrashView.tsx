@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Trash2, RotateCcw, Trash, AlertTriangle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Trash2, RotateCcw, Trash, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,6 +28,7 @@ export function TrashView({
   onPermanentDelete,
   onEmptyTrash,
 }: TrashViewProps) {
+  const navigate = useNavigate();
   const [showEmptyConfirm, setShowEmptyConfirm] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
 
@@ -39,20 +41,46 @@ export function TrashView({
 
   if (deletedNotes.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full py-12 px-4 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
-          <Trash2 className="h-8 w-8 text-muted-foreground" />
+      <div className="flex flex-col h-full">
+        {/* Back Button */}
+        <div className="px-4 pt-3">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/notes')}
+            className="gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Notes
+          </Button>
         </div>
-        <h3 className="text-lg font-medium text-foreground mb-1">Trash is empty</h3>
-        <p className="text-sm text-muted-foreground max-w-xs">
-          Deleted notes will appear here. You can restore them or delete permanently.
-        </p>
+        
+        <div className="flex flex-col items-center justify-center flex-1 py-12 px-4 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+            <Trash2 className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-medium text-foreground mb-1">Trash is empty</h3>
+          <p className="text-sm text-muted-foreground max-w-xs">
+            Deleted notes will appear here. You can restore them or delete permanently.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col h-full">
+      {/* Back Button */}
+      <div className="px-4 pt-3">
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/notes')}
+          className="gap-2 text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Notes
+        </Button>
+      </div>
+      
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <div className="flex items-center gap-2">

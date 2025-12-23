@@ -22,6 +22,7 @@ interface NotesState {
   isCreatingFolder: boolean;
   isCreatingNote: boolean;
   showSubPages: boolean;
+  viewMode: 'grid' | 'list';
 }
 
 // Actions
@@ -63,6 +64,7 @@ interface NotesActions {
   // Panel state
   isFolderPanelCollapsed: boolean;
   toggleFolderPanel: () => void;
+  setViewMode: (mode: 'grid' | 'list') => void;
 
   // Legacy aliases for compatibility
   setActiveFolder: (id: string) => void;
@@ -83,6 +85,7 @@ export const useNotesStore = create<NotesState & NotesActions>()(
       isCreatingFolder: false,
       isCreatingNote: false,
       showSubPages: false,
+      viewMode: 'list' as const,
       currentView: 'notes' as const,
       isFolderPanelCollapsed: false,
 
@@ -402,6 +405,10 @@ export const useNotesStore = create<NotesState & NotesActions>()(
         set((state) => ({ isFolderPanelCollapsed: !state.isFolderPanelCollapsed }));
       },
 
+      setViewMode: (mode: 'grid' | 'list') => {
+        set({ viewMode: mode });
+      },
+
       // Legacy aliases
       setActiveFolder: (id: string) => {
         set({ activeFolderId: id, activeNoteId: null });
@@ -420,6 +427,7 @@ export const useNotesStore = create<NotesState & NotesActions>()(
         activeFolderId: state.activeFolderId,
         activeNoteId: state.activeNoteId,
         showSubPages: state.showSubPages,
+        viewMode: state.viewMode,
         isFolderPanelCollapsed: state.isFolderPanelCollapsed,
       }),
     }

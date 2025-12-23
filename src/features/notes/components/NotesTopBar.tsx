@@ -21,15 +21,13 @@ import { getFolderNoteCount } from '../lib/notesSelectors';
 import { AISummarizeModal } from './AISummarizeModal';
 
 type SortOption = 'updated' | 'created' | 'title-asc' | 'title-desc';
-type ViewMode = 'grid' | 'list';
 
 export function NotesTopBar() {
-  const { folders, notes, activeFolderId, searchQuery, selectFolder, setSearchQuery, createNote } =
+  const { folders, notes, activeFolderId, searchQuery, selectFolder, setSearchQuery, createNote, viewMode, setViewMode } =
     useNotesStore();
 
   const [showAISummarize, setShowAISummarize] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('updated');
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   const noteCount = getFolderNoteCount(notes, activeFolderId);
   const activeFolder = folders.find((f) => f.id === activeFolderId);

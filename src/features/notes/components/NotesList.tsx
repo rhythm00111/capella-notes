@@ -32,6 +32,7 @@ export function NotesList() {
     duplicateNote,
     moveNote,
     updateNote,
+    viewMode,
   } = useNotesStore();
 
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
@@ -138,7 +139,7 @@ export function NotesList() {
   return (
     <>
       <ScrollArea className="flex-1">
-        <div className="p-3 space-y-2">
+        <div className={viewMode === 'grid' ? 'p-3 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3' : 'p-3 flex flex-col gap-3'}>
           <AnimatePresence mode="popLayout">
             {filteredNotes.map((note) => (
               <motion.div
