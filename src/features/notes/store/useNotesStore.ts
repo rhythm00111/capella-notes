@@ -87,7 +87,7 @@ export const useNotesStore = create<NotesState & NotesActions>()(
       showSubPages: false,
       viewMode: 'list' as const,
       currentView: 'notes' as const,
-      isFolderPanelCollapsed: false,
+      isFolderPanelCollapsed: true,
 
       // Folder Actions
       createFolder: (name: string) => {
