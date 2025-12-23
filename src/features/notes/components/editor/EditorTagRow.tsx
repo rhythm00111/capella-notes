@@ -1,6 +1,53 @@
-import { Plus } from 'lucide-react';
+import { 
+  Plus, 
+  Library, 
+  GraduationCap, 
+  Briefcase, 
+  Wallet, 
+  Heart, 
+  BookOpen,
+  Home,
+  Code,
+  Music,
+  Camera,
+  Plane,
+  ShoppingBag,
+  Utensils,
+  Dumbbell,
+  Car,
+  Gamepad2,
+  Palette,
+  Film,
+  Tag
+} from 'lucide-react';
 import { NoteTag, TAG_COLORS } from '../../types/note';
 import { cn } from '@/lib/utils';
+
+// Map common tag names to icons
+const getTagIcon = (tagName: string) => {
+  const name = tagName.toLowerCase();
+  
+  if (name.includes('library') || name.includes('book')) return Library;
+  if (name.includes('university') || name.includes('school') || name.includes('education')) return GraduationCap;
+  if (name.includes('business') || name.includes('work') || name.includes('project')) return Briefcase;
+  if (name.includes('wallet') || name.includes('finance') || name.includes('money')) return Wallet;
+  if (name.includes('health') || name.includes('medical') || name.includes('wellness')) return Heart;
+  if (name.includes('learning') || name.includes('study') || name.includes('course')) return BookOpen;
+  if (name.includes('home') || name.includes('personal')) return Home;
+  if (name.includes('code') || name.includes('dev') || name.includes('tech')) return Code;
+  if (name.includes('music') || name.includes('audio')) return Music;
+  if (name.includes('photo') || name.includes('camera')) return Camera;
+  if (name.includes('travel') || name.includes('trip')) return Plane;
+  if (name.includes('shopping') || name.includes('buy')) return ShoppingBag;
+  if (name.includes('food') || name.includes('recipe') || name.includes('cook')) return Utensils;
+  if (name.includes('fitness') || name.includes('gym') || name.includes('exercise')) return Dumbbell;
+  if (name.includes('car') || name.includes('auto')) return Car;
+  if (name.includes('game') || name.includes('gaming')) return Gamepad2;
+  if (name.includes('art') || name.includes('design') || name.includes('creative')) return Palette;
+  if (name.includes('movie') || name.includes('film') || name.includes('video')) return Film;
+  
+  return Tag; // Default icon
+};
 
 interface EditorTagRowProps {
   tags: NoteTag[];
@@ -9,38 +56,43 @@ interface EditorTagRowProps {
 
 export function EditorTagRow({ tags, onAddTag }: EditorTagRowProps) {
   return (
-    <div className="flex items-center gap-1.5 flex-wrap min-h-[24px]">
-      {tags.map((tag) => {
-        const colors = TAG_COLORS[tag.color];
-        return (
-          <span
-            key={tag.id}
-            className={cn(
-              'inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium',
-              'transition-colors duration-150',
-              colors.bg,
-              colors.text,
-              'border border-transparent'
-            )}
-          >
-            {tag.name}
-          </span>
-        );
-      })}
-      
+    <div className="flex items-center gap-2 flex-wrap min-h-[28px]">
+      {/* Add tag button - comes first */}
       {onAddTag && (
         <button
           onClick={onAddTag}
           className={cn(
-            'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[11px]',
-            'text-muted-foreground/50 hover:text-muted-foreground',
-            'hover:bg-muted/50 transition-all duration-150'
+            'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium',
+            'text-muted-foreground/60 hover:text-muted-foreground',
+            'border border-dashed border-muted-foreground/20 hover:border-muted-foreground/40',
+            'hover:bg-muted/30 transition-all duration-150'
           )}
         >
-          <Plus className="h-3 w-3" />
+          <Plus className="h-3.5 w-3.5" />
           <span>Add tag</span>
         </button>
       )}
+      
+      {/* Tags with icons */}
+      {tags.map((tag) => {
+        const colors = TAG_COLORS[tag.color];
+        const IconComponent = getTagIcon(tag.name);
+        
+        return (
+          <span
+            key={tag.id}
+            className={cn(
+              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium',
+              'transition-colors duration-150',
+              colors.bg,
+              colors.text
+            )}
+          >
+            <IconComponent className="h-3.5 w-3.5" />
+            {tag.name}
+          </span>
+        );
+      })}
     </div>
   );
 }
