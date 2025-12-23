@@ -248,6 +248,9 @@ export function NoteEditor() {
         onToggleFavorite={handleTogglePinned}
         lastSaved={lastSaved}
         onAISummarize={() => setShowAISummarize(true)}
+        tags={note.tags || []}
+        onTagsChange={handleTagsChange}
+        availableTags={availableTags}
       />
 
       {/* Breadcrumb Navigation for Sub-pages */}
@@ -257,16 +260,9 @@ export function NoteEditor() {
         </div>
       )}
 
-      {/* Tag Row - minimal inline display */}
+      {/* Tag Row - minimal inline display (no add button, moved to top bar) */}
       <div className="px-6 md:px-10 lg:px-16 pt-3">
-        <EditorTagRow 
-          tags={note.tags || []} 
-          onAddTag={() => {
-            // Simple scroll to tag picker area or could open popover
-            const tagSection = document.querySelector('[data-tag-picker]');
-            tagSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }}
-        />
+        <EditorTagRow tags={note.tags || []} />
       </div>
 
       <div className="flex-1 flex overflow-hidden">

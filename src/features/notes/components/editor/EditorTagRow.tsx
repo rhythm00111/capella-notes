@@ -1,5 +1,4 @@
 import { 
-  Plus, 
   Library, 
   GraduationCap, 
   Briefcase, 
@@ -51,28 +50,15 @@ const getTagIcon = (tagName: string) => {
 
 interface EditorTagRowProps {
   tags: NoteTag[];
-  onAddTag?: () => void;
 }
 
-export function EditorTagRow({ tags, onAddTag }: EditorTagRowProps) {
+export function EditorTagRow({ tags }: EditorTagRowProps) {
+  if (tags.length === 0) {
+    return null;
+  }
+
   return (
     <div className="flex items-center gap-2 flex-wrap min-h-[28px]">
-      {/* Add tag button - comes first */}
-      {onAddTag && (
-        <button
-          onClick={onAddTag}
-          className={cn(
-            'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium',
-            'text-muted-foreground/60 hover:text-muted-foreground',
-            'border border-dashed border-muted-foreground/20 hover:border-muted-foreground/40',
-            'hover:bg-muted/30 transition-all duration-150'
-          )}
-        >
-          <Plus className="h-3.5 w-3.5" />
-          <span>Add tag</span>
-        </button>
-      )}
-      
       {/* Tags with icons */}
       {tags.map((tag) => {
         const colors = TAG_COLORS[tag.color];
