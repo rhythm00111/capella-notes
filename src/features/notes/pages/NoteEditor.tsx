@@ -10,6 +10,7 @@ import { RightSidebar } from '../components/editor/RightSidebar';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { AISummaryCard } from '../components/AISummaryCard';
 import { AISummarizeModal } from '../components/AISummarizeModal';
+import { EditorTagRow } from '../components/editor/EditorTagRow';
 import { TagPicker } from '../components/TagPicker';
 import { NoteVersion } from '../components/editor/VersionHistoryPanel';
 import { NoteTag } from '../types/note';
@@ -256,12 +257,15 @@ export function NoteEditor() {
         </div>
       )}
 
-      {/* Tags Section */}
-      <div className="px-6 md:px-10 pt-4">
-        <TagPicker 
+      {/* Tag Row - minimal inline display */}
+      <div className="px-6 md:px-10 lg:px-16 pt-3">
+        <EditorTagRow 
           tags={note.tags || []} 
-          onTagsChange={handleTagsChange}
-          availableTags={availableTags}
+          onAddTag={() => {
+            // Simple scroll to tag picker area or could open popover
+            const tagSection = document.querySelector('[data-tag-picker]');
+            tagSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }}
         />
       </div>
 
@@ -280,7 +284,7 @@ export function NoteEditor() {
         {/* Main Editor */}
         <main
           className={cn(
-            'flex-1 overflow-auto custom-scrollbar transition-all duration-250',
+            'flex-1 overflow-auto notion-scrollbar transition-all duration-250',
             leftSidebarOpen && 'ml-60',
             rightSidebarOpen && 'mr-72'
           )}
@@ -290,6 +294,16 @@ export function NoteEditor() {
             <div className="px-6 md:px-10 lg:px-16 pt-6">
               <AISummaryCard content={content} noteId={noteId || ''} />
             </div>
+            
+            {/* Tag Picker (hidden below main content for editing) */}
+            <div className="px-6 md:px-10 lg:px-16 pt-2" data-tag-picker>
+              <TagPicker 
+                tags={note.tags || []} 
+                onTagsChange={handleTagsChange}
+                availableTags={availableTags}
+              />
+            </div>
+            
             <EditorContent
               ref={editorRef}
               title={title}
