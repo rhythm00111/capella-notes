@@ -14,10 +14,14 @@ interface NoteCardProps {
 
 export const NoteCard = forwardRef<HTMLDivElement, NoteCardProps>(
   ({ note, isSelected, folderName, onClick }, ref) => {
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [localExpanded, setLocalExpanded] = useState(false);
     const preview = getPreview(note.content);
     const formattedDate = formatRelativeDate(note.updatedAt);
     const getChildNotes = useNotesStore((state) => state.getChildNotes);
+    const allCardsExpanded = useNotesStore((state) => state.allCardsExpanded);
+    
+    // Card is expanded if global toggle is on OR local toggle is on
+    const isExpanded = allCardsExpanded || localExpanded;
     
     // Get sub-pages for this note
     const subPages = getChildNotes(note.id);
@@ -30,7 +34,7 @@ export const NoteCard = forwardRef<HTMLDivElement, NoteCardProps>(
 
     const handleExpandClick = (e: React.MouseEvent) => {
       e.stopPropagation();
-      setIsExpanded(!isExpanded);
+      setLocalExpanded(!localExpanded);
     };
 
     return (
