@@ -23,6 +23,7 @@ interface NotesState {
   isCreatingNote: boolean;
   showSubPages: boolean;
   viewMode: 'grid' | 'list';
+  allCardsExpanded: boolean;
 }
 
 // Actions
@@ -66,6 +67,7 @@ interface NotesActions {
   isFolderPanelCollapsed: boolean;
   toggleFolderPanel: () => void;
   setViewMode: (mode: 'grid' | 'list') => void;
+  toggleAllCardsExpanded: () => void;
 
   // Legacy aliases for compatibility
   setActiveFolder: (id: string) => void;
@@ -89,6 +91,7 @@ export const useNotesStore = create<NotesState & NotesActions>()(
       viewMode: 'list' as const,
       currentView: 'notes' as const,
       isFolderPanelCollapsed: true,
+      allCardsExpanded: false,
 
       // Folder Actions
       createFolder: (name: string) => {
@@ -423,6 +426,10 @@ export const useNotesStore = create<NotesState & NotesActions>()(
 
       setViewMode: (mode: 'grid' | 'list') => {
         set({ viewMode: mode });
+      },
+
+      toggleAllCardsExpanded: () => {
+        set((state) => ({ allCardsExpanded: !state.allCardsExpanded }));
       },
 
       // Legacy aliases

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Search, ChevronDown, X, LayoutGrid, List, SlidersHorizontal } from 'lucide-react';
+import { Plus, Search, ChevronDown, X, LayoutGrid, List, SlidersHorizontal, ChevronsUpDown, ChevronsDownUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +23,7 @@ import { AISummarizeModal } from './AISummarizeModal';
 type SortOption = 'updated' | 'created' | 'title-asc' | 'title-desc';
 
 export function NotesTopBar() {
-  const { folders, notes, activeFolderId, searchQuery, selectFolder, setSearchQuery, createNote, viewMode, setViewMode } =
+  const { folders, notes, activeFolderId, searchQuery, selectFolder, setSearchQuery, createNote, viewMode, setViewMode, allCardsExpanded, toggleAllCardsExpanded } =
     useNotesStore();
 
   const [showAISummarize, setShowAISummarize] = useState(false);
@@ -75,6 +75,24 @@ export function NotesTopBar() {
               {/* Bottom Shine */}
               <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </motion.button>
+
+            {/* Expand/Collapse All Toggle */}
+            <button
+              onClick={toggleAllCardsExpanded}
+              className={`hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg border transition-all duration-200 ${
+                allCardsExpanded
+                  ? 'bg-[#063f47]/10 border-[#063f47]/30 text-[#063f47]'
+                  : 'border-border bg-muted/30 text-muted-foreground hover:text-foreground hover:border-border/80'
+              }`}
+              title={allCardsExpanded ? 'Collapse all cards' : 'Expand all cards'}
+            >
+              {allCardsExpanded ? (
+                <ChevronsDownUp className="h-4 w-4" />
+              ) : (
+                <ChevronsUpDown className="h-4 w-4" />
+              )}
+              <span className="text-xs font-medium">{allCardsExpanded ? 'Collapse' : 'Expand'}</span>
+            </button>
 
             {/* View Toggle */}
             <div className="hidden md:flex items-center rounded-lg border border-border bg-muted/30 p-1">
