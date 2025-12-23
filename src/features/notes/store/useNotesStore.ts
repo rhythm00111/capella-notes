@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Note } from '../types/note';
+import { Note, NoteTag } from '../types/note';
 import { Folder, ALL_NOTES_FOLDER_ID, ALL_NOTES_FOLDER } from '../types/folder';
 import { initialNotes, initialFolders } from '../data/initialNotes';
 import { generateId } from '../lib/notesHelpers';
@@ -35,7 +35,7 @@ interface NotesActions {
   // Note actions
   createNote: (folderId?: string, title?: string) => Note;
   createSubPage: (parentId: string, title?: string) => Note | null;
-  updateNote: (id: string, updates: Partial<Pick<Note, 'title' | 'content' | 'isPinned'>>) => void;
+  updateNote: (id: string, updates: Partial<Pick<Note, 'title' | 'content' | 'isPinned' | 'tags'>>) => void;
   deleteNote: (id: string) => void;
   deleteSubPage: (subPageId: string) => void;
   selectNote: (id: string | null) => void;
@@ -44,6 +44,7 @@ interface NotesActions {
   getNoteBreadcrumbs: (noteId: string) => Array<{ id: string; title: string }>;
   getChildNotes: (noteId: string) => Note[];
   getParentNote: (noteId: string) => Note | null;
+  getAllTags: () => NoteTag[];
 
   // Trash actions
   restoreNote: (noteId: string) => void;
@@ -275,12 +276,27 @@ export const useNotesStore = create<NotesState & NotesActions>()(
         return notes.find((n) => n.id === note.parentId && !n.isDeleted) || null;
       },
 
-      updateNote: (id: string, updates: Partial<Pick<Note, 'title' | 'content' | 'isPinned'>>) => {
+      updateNote: (id: string, updates: Partial<Pick<Note, 'title' | 'content' | 'isPinned' | 'tags'>>) => {
         set((state) => ({
           notes: state.notes.map((note) =>
             note.id === id ? { ...note, ...updates, updatedAt: new Date().toISOString() } : note
           ),
         }));
+      },
+
+      getAllTags: () => {
+        const { notes } = get();
+        const tagMap = new Map<string, NoteTag>();
+        
+        notes.forEach((note) => {
+          note.tags?.forEach((tag) => {
+            if (!tagMap.has(tag.id)) {
+              tagMap.set(tag.id, tag);
+            }
+          });
+        });
+        
+        return Array.from(tagMap.values());
       },
 
       deleteNote: (id: string) => {

@@ -10,7 +10,9 @@ import { RightSidebar } from '../components/editor/RightSidebar';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { AISummaryCard } from '../components/AISummaryCard';
 import { AISummarizeModal } from '../components/AISummarizeModal';
+import { TagPicker } from '../components/TagPicker';
 import { NoteVersion } from '../components/editor/VersionHistoryPanel';
+import { NoteTag } from '../types/note';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { generateId } from '../lib/notesHelpers';
@@ -19,9 +21,10 @@ import { AUTO_SAVE_DELAY } from '../lib/notesConstants';
 export function NoteEditor() {
   const { noteId } = useParams<{ noteId: string }>();
   const navigate = useNavigate();
-  const { notes, updateNote, deleteNote, selectNote, createNote, createSubPage, getNoteBreadcrumbs, getChildNotes, getParentNote } = useNotesStore();
+  const { notes, updateNote, deleteNote, selectNote, createNote, createSubPage, getNoteBreadcrumbs, getChildNotes, getParentNote, getAllTags } = useNotesStore();
 
   const note = getNoteById(notes, noteId || null);
+  const availableTags = getAllTags();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -106,6 +109,12 @@ export function NoteEditor() {
       updateNote(noteId, { isPinned: !note.isPinned });
     }
   };
+
+  const handleTagsChange = useCallback((newTags: NoteTag[]) => {
+    if (noteId) {
+      updateNote(noteId, { tags: newTags });
+    }
+  }, [noteId, updateNote]);
 
   const handleCreateLinkedNote = useCallback(
     (newTitle: string): string => {
@@ -246,6 +255,15 @@ export function NoteEditor() {
           <Breadcrumb items={breadcrumbs} onNavigate={handleBreadcrumbNavigate} />
         </div>
       )}
+
+      {/* Tags Section */}
+      <div className="px-6 md:px-10 pt-4">
+        <TagPicker 
+          tags={note.tags || []} 
+          onTagsChange={handleTagsChange}
+          availableTags={availableTags}
+        />
+      </div>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar */}
