@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Trash2, RotateCcw, Trash, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -14,6 +13,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Note } from '../types/note';
+import { useNotesStore } from '../store/useNotesStore';
 
 interface TrashViewProps {
   deletedNotes: Note[];
@@ -28,7 +28,7 @@ export function TrashView({
   onPermanentDelete,
   onEmptyTrash,
 }: TrashViewProps) {
-  const navigate = useNavigate();
+  const setCurrentView = useNotesStore((state) => state.setCurrentView);
   const [showEmptyConfirm, setShowEmptyConfirm] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
 
@@ -46,7 +46,7 @@ export function TrashView({
         <div className="px-4 pt-3">
           <Button
             variant="ghost"
-            onClick={() => navigate('/notes')}
+            onClick={() => setCurrentView('notes')}
             className="gap-2 text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -73,7 +73,7 @@ export function TrashView({
       <div className="px-4 pt-3">
         <Button
           variant="ghost"
-          onClick={() => navigate('/notes')}
+          onClick={() => setCurrentView('notes')}
           className="gap-2 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
