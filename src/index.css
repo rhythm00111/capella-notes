@@ -372,24 +372,31 @@
 
   /* ========== BUTTONS ========== */
   .btn-premium {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm;
-    @apply bg-primary text-primary-foreground;
-    @apply hover:bg-primary/90;
-    @apply active:scale-[0.98];
-    @apply shadow-md hover:shadow-lg;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm;
+    background: #063f47;
+    color: black;
+    @apply shadow-md;
+    @apply hover:shadow-lg hover:shadow-[#063f47]/20;
+    @apply active:scale-[0.97];
     @apply transition-all duration-200;
+  }
+  
+  .btn-premium:hover {
+    background: #085a66;
   }
   
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-medium text-sm;
     @apply text-muted-foreground hover:text-foreground hover:bg-muted;
-    @apply transition-all duration-150;
+    @apply active:scale-[0.97];
+    @apply transition-all duration-200;
   }
   
   .btn-icon {
     @apply w-10 h-10 flex items-center justify-center rounded-lg;
     @apply text-muted-foreground hover:text-foreground hover:bg-muted;
-    @apply transition-all duration-150;
+    @apply active:scale-[0.97];
+    @apply transition-all duration-200;
   }
 
   /* ========== SCROLLBAR ========== */
