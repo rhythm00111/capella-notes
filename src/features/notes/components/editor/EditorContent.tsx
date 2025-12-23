@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Heading2, FileText } from 'lucide-react';
 import { SlashCommandMenu } from './SlashCommandMenu';
 import type { SlashCommand } from './SlashCommandMenu';
 import { FloatingFormatBar } from './FloatingFormatBar';
@@ -58,6 +58,9 @@ export const EditorContent = forwardRef<EditorContentRef, EditorContentProps>(
       top: number;
       lineStart: number;
     }>({ show: false, top: 0, lineStart: 0 });
+
+    // State for + button menu
+    const [plusMenuOpen, setPlusMenuOpen] = useState(false);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const titleRef = useRef<HTMLInputElement>(null);
@@ -472,16 +475,80 @@ export const EditorContent = forwardRef<EditorContentRef, EditorContentProps>(
       }
     };
 
-    // Handle + button click for sub-page creation
-    const handlePlusClick = useCallback(() => {
+    // Handle + button click - show menu instead of creating directly
+    const handlePlusClick = useCallback((e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setPlusMenuOpen(true);
+    }, []);
+
+    // Handle sub-heading insertion
+    const handleInsertSubheading = useCallback(() => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      const cursorPos = emptyLineInfo.lineStart;
+      const beforeCursor = localContent.substring(0, cursorPos);
+      const afterCursor = localContent.substring(cursorPos);
+
+      const headingText = '## ';
+      const newContent = beforeCursor + headingText + afterCursor;
+
+      setLocalContent(newContent);
+      onContentChange(newContent);
+      setPlusMenuOpen(false);
+      setEmptyLineInfo({ show: false, top: 0, lineStart: 0 });
+
+      // Focus and place cursor after heading markers
+      setTimeout(() => {
+        textarea.focus();
+        const newCursorPos = cursorPos + headingText.length;
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+      }, 0);
+    }, [localContent, emptyLineInfo.lineStart, onContentChange]);
+
+    // Handle sub-page creation
+    const handleCreateSubPageOption = useCallback(() => {
       if (!onCreateSubPage) return;
       
-      // Hide the + button
+      setPlusMenuOpen(false);
       setEmptyLineInfo({ show: false, top: 0, lineStart: 0 });
-      
-      // Create sub-page
       onCreateSubPage('Untitled Sub-page');
     }, [onCreateSubPage]);
+
+    // Close menu on escape
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape' && plusMenuOpen) {
+          setPlusMenuOpen(false);
+        }
+      };
+      
+      if (plusMenuOpen) {
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }
+    }, [plusMenuOpen]);
+
+    // Close menu when clicking outside
+    useEffect(() => {
+      const handleClickOutside = () => {
+        if (plusMenuOpen) {
+          setPlusMenuOpen(false);
+        }
+      };
+
+      if (plusMenuOpen) {
+        // Delay to prevent immediate close
+        const timer = setTimeout(() => {
+          window.addEventListener('click', handleClickOutside);
+        }, 10);
+        return () => {
+          clearTimeout(timer);
+          window.removeEventListener('click', handleClickOutside);
+        };
+      }
+    }, [plusMenuOpen]);
 
     return (
       <div ref={containerRef} className="editor-container">
@@ -532,27 +599,66 @@ export const EditorContent = forwardRef<EditorContentRef, EditorContentProps>(
 
         {/* Inline + Button for empty lines */}
         {emptyLineInfo.show && onCreateSubPage && (
-          <button
-            onClick={handlePlusClick}
-            className={cn(
-              'fixed z-50 w-6 h-6 flex items-center justify-center',
-              'rounded-md border border-border bg-card/90 backdrop-blur-sm',
-              'text-muted-foreground hover:text-primary hover:border-primary/50',
-              'transition-all duration-150 hover:scale-110',
-              'shadow-sm hover:shadow-md',
-              'group'
-            )}
+          <div
+            className="fixed z-50"
             style={{
-              top: emptyLineInfo.top - 4,
+              top: emptyLineInfo.top,
               left: containerRef.current 
-                ? containerRef.current.getBoundingClientRect().left - 32 
+                ? containerRef.current.getBoundingClientRect().left - 28 
                 : 0,
             }}
-            title="Create sub-page"
-            aria-label="Create sub-page"
           >
-            <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-200" />
-          </button>
+            {/* Plus button - minimal, no background */}
+            <button
+              onClick={handlePlusClick}
+              className={cn(
+                'w-5 h-5 flex items-center justify-center',
+                'text-muted-foreground/30 hover:text-muted-foreground/70',
+                'transition-colors duration-150',
+                plusMenuOpen && 'text-muted-foreground/70'
+              )}
+              title="Add block"
+              aria-label="Add block"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+
+            {/* Inline menu */}
+            {plusMenuOpen && (
+              <div 
+                className={cn(
+                  'absolute left-0 top-6 z-50',
+                  'flex flex-col py-1 min-w-[140px]',
+                  'bg-popover border border-border rounded-lg shadow-lg',
+                  'animate-in fade-in-0 zoom-in-95 duration-100'
+                )}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={handleInsertSubheading}
+                  className={cn(
+                    'flex items-center gap-2 px-3 py-2 text-sm text-left',
+                    'text-foreground/80 hover:text-foreground hover:bg-muted/50',
+                    'transition-colors duration-100'
+                  )}
+                >
+                  <Heading2 className="w-4 h-4 text-muted-foreground" />
+                  <span>Sub-heading</span>
+                </button>
+                <button
+                  onClick={handleCreateSubPageOption}
+                  className={cn(
+                    'flex items-center gap-2 px-3 py-2 text-sm text-left',
+                    'text-foreground/80 hover:text-foreground hover:bg-muted/50',
+                    'transition-colors duration-100'
+                  )}
+                >
+                  <FileText className="w-4 h-4 text-muted-foreground" />
+                  <span>Sub-page</span>
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
     );
