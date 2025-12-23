@@ -1,7 +1,7 @@
 import { forwardRef, useState } from 'react';
 import { Clock, Pin, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Note, TAG_COLORS } from '../types/note';
+import { Note } from '../types/note';
 import { getPreview, formatRelativeDate } from '../lib/notesHelpers';
 import { useNotesStore } from '../store/useNotesStore';
 
@@ -26,11 +26,8 @@ export const NoteCard = forwardRef<HTMLDivElement, NoteCardProps>(
     // Get sub-pages for this note
     const subPages = getChildNotes(note.id);
     
-    // Get color-coded tags from the note
-    const tags = note.tags || [];
-    
-    // Check if there's expandable content
-    const hasExpandableContent = tags.length > 0 || subPages.length > 0;
+    // Check if there's expandable content (only sub-pages now)
+    const hasExpandableContent = subPages.length > 0;
 
     const handleExpandClick = (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -80,15 +77,13 @@ export const NoteCard = forwardRef<HTMLDivElement, NoteCardProps>(
             >
               <ChevronDown className="h-3 w-3" />
               <span>
-                {tags.length > 0 && `${tags.length} tag${tags.length > 1 ? 's' : ''}`}
-                {tags.length > 0 && subPages.length > 0 && ' · '}
-                {subPages.length > 0 && `${subPages.length} sub-page${subPages.length > 1 ? 's' : ''}`}
+                {subPages.length} sub-page{subPages.length > 1 ? 's' : ''}
               </span>
             </button>
           </div>
         )}
 
-        {/* Expanded Content - Tags & Sub-pages */}
+        {/* Expanded Content - Sub-pages */}
         {isExpanded && hasExpandableContent && (
           <div className="mt-3 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
             {/* Collapse Button */}
@@ -100,48 +95,24 @@ export const NoteCard = forwardRef<HTMLDivElement, NoteCardProps>(
               <span>Collapse</span>
             </button>
 
-            {/* Color-coded Tags Section */}
-            {tags.length > 0 && (
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {tags.map((tag) => {
-                  const colors = TAG_COLORS[tag.color];
-                  return (
-                    <span
-                      key={tag.id}
-                      className={cn(
-                        'inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium border',
-                        colors.bg,
-                        colors.text,
-                        colors.border
-                      )}
-                    >
-                      {tag.name}
-                    </span>
-                  );
-                })}
-              </div>
-            )}
-
             {/* Sub-pages Section */}
-            {subPages.length > 0 && (
-              <div className="pt-2 border-t border-border/50">
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
-                  <FileText className="h-3 w-3" />
-                  <span className="font-medium">{subPages.length} sub-page{subPages.length > 1 ? 's' : ''}</span>
-                </div>
-                <div className="space-y-1">
-                  {subPages.map((subPage) => (
-                    <div
-                      key={subPage.id}
-                      className="flex items-center gap-2 text-xs text-muted-foreground/70 pl-4 py-1 rounded hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="w-1 h-1 rounded-full bg-[#063f47]/40" />
-                      <span className="truncate">{subPage.title || 'Untitled'}</span>
-                    </div>
-                  ))}
-                </div>
+            <div className="pt-2 border-t border-border/50">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
+                <FileText className="h-3 w-3" />
+                <span className="font-medium">{subPages.length} sub-page{subPages.length > 1 ? 's' : ''}</span>
               </div>
-            )}
+              <div className="space-y-1">
+                {subPages.map((subPage) => (
+                  <div
+                    key={subPage.id}
+                    className="flex items-center gap-2 text-xs text-muted-foreground/70 pl-4 py-1 rounded hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="w-1 h-1 rounded-full bg-[#063f47]/40" />
+                    <span className="truncate">{subPage.title || 'Untitled'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
