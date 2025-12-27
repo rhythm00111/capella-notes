@@ -7,7 +7,6 @@ import { EditorTopBar } from '../components/editor/EditorTopBar';
 import { EditorContent, EditorContentRef } from '../components/editor/EditorContent';
 import { EditorSidebar } from '../components/editor/EditorSidebar';
 import { RightSidebar } from '../components/editor/RightSidebar';
-import { SubPagesSection } from '../components/editor/SubPagesSection';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { AISummaryCard } from '../components/AISummaryCard';
 import { AISummarizeModal } from '../components/AISummarizeModal';
@@ -295,19 +294,6 @@ export function NoteEditor() {
                 } : undefined}
               />
 
-              {/* Sub-pages Section - Notion-style divider */}
-              <div className="px-6 md:px-10 lg:px-16 pb-8">
-                <SubPagesSection
-                  childNotes={childNotes}
-                  onCreateSubPage={() => {
-                    const newSubPage = createSubPage(noteId!, 'Untitled Sub-page');
-                    if (newSubPage) {
-                      navigate(`/notes/${newSubPage.id}`);
-                    }
-                  }}
-                  canCreateSubPage={canCreateSubPageHere}
-                />
-              </div>
             </div>
           </div>
         </main>

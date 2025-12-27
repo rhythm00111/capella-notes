@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import { Plus, FileText } from 'lucide-react';
+import { Plus, FileText, ChevronDown, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
 import { Note } from '../../types/note';
+import { SubPageCard } from '../SubPageCard';
 import { getSubPagePreview } from '../../lib/subPageHelpers';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -19,64 +21,65 @@ export function SubPagesSection({
   className 
 }: SubPagesSectionProps) {
   const navigate = useNavigate();
+  const [isExpanded, setIsExpanded] = useState(true);
 
-  // Only show section if there are child notes or user can create sub-pages
   if (childNotes.length === 0 && !canCreateSubPage) {
     return null;
   }
 
   return (
-    <div className={cn('mt-8', className)}>
-      {/* Notion-style Divider with Label */}
-      <div className="relative flex items-center mb-4">
-        <div className="flex-grow border-t border-border/50" />
-        <span className="mx-3 text-xs uppercase tracking-wide text-muted-foreground font-medium">
-          Sub-pages
-        </span>
-        <div className="flex-grow border-t border-border/50" />
+    <div className={cn('mt-8 pt-6 border-t border-border', className)}>
+      {/* Section Header */}
+      <div className="flex items-center justify-between mb-4">
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {isExpanded ? (
+            <ChevronDown className="w-4 h-4" />
+          ) : (
+            <ChevronRight className="w-4 h-4" />
+          )}
+          <FileText className="w-4 h-4" />
+          <span>Sub-pages</span>
+          {childNotes.length > 0 && (
+            <span className="text-xs bg-muted px-1.5 py-0.5 rounded-full">
+              {childNotes.length}
+            </span>
+          )}
+        </button>
+
+        {canCreateSubPage && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onCreateSubPage}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            <Plus className="w-3.5 h-3.5 mr-1" />
+            Add sub-page
+          </Button>
+        )}
       </div>
 
       {/* Sub-pages List */}
-      {childNotes.length > 0 ? (
-        <ul className="space-y-1">
-          {childNotes.map((child) => (
-            <li key={child.id}>
-              <button
+      {isExpanded && (
+        <div className="space-y-2">
+          {childNotes.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              No sub-pages yet. Create one with <code className="text-xs bg-muted px-1 py-0.5 rounded">/page</code> or click "Add sub-page".
+            </p>
+          ) : (
+            childNotes.map((child) => (
+              <SubPageCard
+                key={child.id}
+                title={child.title}
+                preview={getSubPagePreview(child.content)}
                 onClick={() => navigate(`/notes/${child.id}`)}
-                className="group flex items-center gap-2 w-full rounded-lg px-3 py-2 text-left hover:bg-muted/50 transition-colors"
-              >
-                <FileText className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <span className="font-medium text-foreground/90 group-hover:text-foreground transition-colors block truncate">
-                    {child.title || 'Untitled'}
-                  </span>
-                  {getSubPagePreview(child.content) && (
-                    <span className="text-xs text-muted-foreground truncate block">
-                      {getSubPagePreview(child.content, 60)}
-                    </span>
-                  )}
-                </div>
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-sm text-muted-foreground py-2 text-center">
-          No sub-pages yet
-        </p>
-      )}
-
-      {/* Add Sub-page Button */}
-      {canCreateSubPage && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onCreateSubPage}
-          className="mt-3 w-full justify-start text-muted-foreground hover:text-foreground"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add sub-page
-        </Button>
+              />
+            ))
+          )}
+        </div>
       )}
     </div>
   );
